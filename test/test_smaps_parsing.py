@@ -1,6 +1,5 @@
 
 import unittest
-from cStringIO import StringIO
 from parsers.smaps import (
     parse_smaps_header,
     parse_smaps_memory_region
@@ -96,8 +95,7 @@ MMUPageSize:           9 kB
 Locked:               10 kB
 VmFlags: rd mr mw me sd"""
 
-        print (StringIO(data).readline())
-        info = parse_smaps_memory_region(StringIO(data))
+        info = parse_smaps_memory_region(data.split('\n'))
 
         # We ignore the "Size" line since it's less useful than the calculated
         # size.

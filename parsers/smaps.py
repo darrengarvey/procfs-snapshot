@@ -1,4 +1,5 @@
 from model import SmapsPermissions, MemoryRegion
+import re
 
 
 def parse_smaps_header(header):
@@ -37,10 +38,28 @@ def parse_smaps_header(header):
 
     return info
 
-def parse_smaps_memory_region(stream):
-    """stream can be a file or StringIO.
 
-Parse a whole smaps region, which may look like:
+_smaps_string_mappings = {
+    'Rss': 'rss',
+    'Pss': 'pss',
+    'Shared_Clean' : 'shared_clean',
+    'Shared_Dirty' : 'shared_dirty',
+    'Private_Clean' : 'private_clean',
+    'Private_Dirty' : 'private_dirty',
+    'Referenced' : 'referenced',
+    'Anonymous' : 'anonymous',
+    'AnonHugePages' : 'anonymous_huge',
+    'Shared_Hugetlb' : 'shared_hugetlb',
+    'Private_Hugetlb' : 'private_hugetlb',
+    'Swap' : 'swap',
+    'SwapPss' : 'swap_pss',
+    'KernelPageSize' : 'kernel_page_size',
+    'MMUPageSize': 'mmu_page_size',
+    'Locked': 'locked',
+}
+
+def parse_smaps_memory_region(lines):
+    """Parse a whole smaps region, which may look like:
 
 7f5c8550e000-7f5c85554000 r--p 00000000 08:06 1309629   /fonts/Arial_Bold.ttf
 Size:                280 kB
@@ -62,9 +81,21 @@ MMUPageSize:           9 kB
 Locked:               10 kB
 VmFlags: rd mr mw me sd"""
 
-    region = MemoryRegion()
-    while True:
-        line = stream.readline()
-        if not line: break
+    region = parse_smaps_header(lines[0])
+
+    global _smaps_string_mappings
+    for line in lines[1:]:
+        parts = re.split('[ :]+', line.strip())
+        if 'Size' == parts[0]:
+            # We calculate the size from the address ranges instead.
+            pass
+        elif 'VmFlags' == parts[0]:
+            region.vm_flags = parts[1:]
+        else:
+            # All other lines should be an amount of some type of memory.
+            try:
+                region.__dict__[_smaps_string_mappings[parts[0]]] = int(parts[1]) * 1024
+            except:
+                print ("Line not recognised: '%s'" % line)
         print ('line', line.strip())
     return region

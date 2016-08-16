@@ -1,10 +1,12 @@
 
 import unittest
+from cStringIO import StringIO
 from parsers.smaps import (
-    parse_smaps_header
+    parse_smaps_header,
+    parse_smaps_memory_region
 )
 
-class SmapsParserTest(unittest.TestCase):
+class SmapsHeaderParserTest(unittest.TestCase):
     
     def setUp(self):
         import os
@@ -67,6 +69,67 @@ class SmapsParserTest(unittest.TestCase):
         self.assertEqual('/SYSV00000000', info.name)
 
         self.assertTrue(info.deleted)
+
+
+class SmapsMemoryRegionParserTest(unittest.TestCase):
+    
+    def test_parsing_a_full_smaps_memory_region(self):
+        # Here's a full example of what we get in smaps for a memory region
+        # The numbers are faked to make the test more useful.
+        data = """7f5c8550e000-7f5c85554000 r--p 00000000 08:06 1309629   /fonts/Arial_Bold.ttf
+Size:                280 kB
+Rss:                 152 kB
+Pss:                  86 kB
+Shared_Clean:        132 kB
+Shared_Dirty:         12 kB
+Private_Clean:        20 kB
+Private_Dirty:         1 kB
+Referenced:          152 kB
+Anonymous:             2 kB
+AnonHugePages:         3 kB
+Shared_Hugetlb:        4 kB
+Private_Hugetlb:       5 kB
+Swap:                  6 kB
+SwapPss:               7 kB
+KernelPageSize:        8 kB
+MMUPageSize:           9 kB
+Locked:               10 kB
+VmFlags: rd mr mw me sd"""
+
+        print (StringIO(data).readline())
+        info = parse_smaps_memory_region(StringIO(data))
+
+        # We ignore the "Size" line since it's less useful than the calculated
+        # size.
+        self.assertEqual(0x7f5c85554000 - 0x7f5c8550e000, info.size)
+
+        self.assertEqual(152 * 1024, info.rss)
+        self.assertEqual( 86 * 1024, info.pss)
+
+        self.assertEqual(132 * 1024, info.shared_clean)
+        self.assertEqual( 12 * 1024, info.shared_dirty)
+
+        self.assertEqual( 20 * 1024, info.private_clean)
+        self.assertEqual(  1 * 1024, info.private_dirty)
+
+        self.assertEqual(152 * 1024, info.referenced)
+
+        self.assertEqual(  2 * 1024, info.anonymous)
+        self.assertEqual(  3 * 1024, info.anonymous_huge)
+
+        self.assertEqual(  4 * 1024, info.shared_hugetlb)
+        self.assertEqual(  5 * 1024, info.private_hugetlb)
+
+        self.assertEqual(  6 * 1024, info.swap)
+        self.assertEqual(  7 * 1024, info.swap_pss)
+
+        self.assertEqual(  8 * 1024, info.kernel_page_size)
+        self.assertEqual(  9 * 1024, info.mmu_page_size)
+
+        self.assertEqual( 10 * 1024, info.locked)
+
+        self.assertEqual(['rd', 'mr', 'mw', 'me', 'sd'],
+                         info.vm_flags)
 
 
 if __name__ == '__main__':

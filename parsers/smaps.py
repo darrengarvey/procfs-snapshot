@@ -36,3 +36,35 @@ def parse_smaps_header(header):
     info.deleted = header.endswith('(deleted)')
 
     return info
+
+def parse_smaps_memory_region(stream):
+    """stream can be a file or StringIO.
+
+Parse a whole smaps region, which may look like:
+
+7f5c8550e000-7f5c85554000 r--p 00000000 08:06 1309629   /fonts/Arial_Bold.ttf
+Size:                280 kB
+Rss:                 152 kB
+Pss:                  86 kB
+Shared_Clean:        132 kB
+Shared_Dirty:         12 kB
+Private_Clean:        20 kB
+Private_Dirty:         1 kB
+Referenced:          152 kB
+Anonymous:             2 kB
+AnonHugePages:         3 kB
+Shared_Hugetlb:        4 kB
+Private_Hugetlb:       5 kB
+Swap:                  6 kB
+SwapPss:               7 kB
+KernelPageSize:        8 kB
+MMUPageSize:           9 kB
+Locked:               10 kB
+VmFlags: rd mr mw me sd"""
+
+    region = MemoryRegion()
+    while True:
+        line = stream.readline()
+        if not line: break
+        print ('line', line.strip())
+    return region

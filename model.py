@@ -34,3 +34,30 @@ class MemoryRegion(object):
     @property
     def size(self):
         return self.end_addr - self.start_addr
+
+class Process(object):
+    def __init__(self, pid, argv=[]):
+        self.pid = pid
+        self.argv = argv
+        # Memory maps in the process' address space.
+        self.maps = []
+
+    @property
+    def name(self):
+        return self.argv[0]
+
+
+class ProcessList(object):
+    def __init__(self):
+        self.processes = {}
+
+    def get(self, pid):
+        try:
+            return self.processes[pid]
+        except KeyError:
+            proc = Process(pid)
+            self.processes[pid] = proc
+            return proc
+
+    def __len__(self):
+        return len(self.processes)

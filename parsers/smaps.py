@@ -3,7 +3,7 @@ import re
 
 
 def parse_smaps_header(header):
-    info = MemoryRegion()
+    info = MemoryRegion(free=False)
     # Example line is:
     # 011e6000-01239000 rw-p 00000000 00:00 0    [heap]
     # 8ec00000-8ec01000 rw-s 00000000 00:14 20   /dev/shm/NS2371 (deleted)
@@ -93,7 +93,7 @@ VmFlags: rd mr mw me sd"""
         region = parse_smaps_header(lines[0])
         lines = lines[1:]
     else:
-        region = MemoryRegion()
+        region = MemoryRegion(free=False)
 
     global _smaps_string_mappings
     for line in lines:

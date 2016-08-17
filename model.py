@@ -8,7 +8,8 @@ class SmapsPermissions(object):
         self.private = False
 
 class MemoryRegion(object):
-    def __init__(self):
+    def __init__(self, free):
+        self.free = free
         self.start_addr = 0
         self.end_addr = 0
         self.permissions = SmapsPermissions()

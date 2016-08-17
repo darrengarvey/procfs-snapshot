@@ -54,11 +54,16 @@ class MemoryRegionList(object):
 
     def __iter__(self):
         # Always return memory regions in sorted order
-        self.maps = sort(self.maps)
+        self.maps.sort()
         return self.maps
 
     def __len__(self):
         return len(self.maps)
+
+    def __repr__(self):
+        self.maps.sort()
+        return """<MemoryRegionList: len={}, from=0x{:02x}, to=0x{:02x}>""".format(
+            len(self.maps), self.maps[0].start_addr, self.maps[-1].end_addr)
 
 class Process(object):
     def __init__(self, pid, argv=[]):

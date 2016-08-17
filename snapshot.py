@@ -34,8 +34,9 @@ def main(args):
     LOGGER.info('Reading procfs with cmd: %s' % cmd)
     processes, memory_regions = read_tailed_files(stream)
 
-    LOGGER.info('Found %d processes and %d used memory fragments' % \
-                (len(processes), len(memory_regions)))
+    LOGGER.info('Found %d processes and %d used memory fragments'.format(
+                (len(processes), len(memory_regions))))
+    LOGGER.info('Regions: %s' % memory_regions)
 
 if __name__ == '__main__':
     main(parse_args())

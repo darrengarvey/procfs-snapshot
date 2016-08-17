@@ -11,13 +11,16 @@ def parse_args():
                         help='user to log into remote host with (default: root)')
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='enable more verbose logging')
+    parser.add_argument('--db', help='path to store the data to (sqlite format)')
     args = parser.parse_args()
     return args
 
 def main(args):
+    import logging
     if args.verbose:
-        import logging
         LOGGER.setLevel(logging.DEBUG)
+    else:
+        LOGGER.setLevel(logging.INFO)
     if args.ip == '':
         print ('Loading local procfs files')
         cmd = 'sudo bash -c "tail -n +1 /proc/*/{cmdline,smaps}"'
@@ -28,8 +31,11 @@ def main(args):
         #tail /proc/*/{cmdline,smaps}\'' % args.hostname
         stream = Popen(cmd, shell=True, bufsize=-1, stdout=PIPE).stdout
 
-    print ('Reading stream now, cmd: %s' % cmd)
-    processes = read_tailed_files(stream)
+    LOGGER.info('Reading procfs with cmd: %s' % cmd)
+    processes, memory_regions = read_tailed_files(stream)
+
+    LOGGER.info('Found %d processes and %d used memory fragments' % \
+                (len(processes), len(memory_regions)))
 
 if __name__ == '__main__':
     main(parse_args())

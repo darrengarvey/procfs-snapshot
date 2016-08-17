@@ -36,6 +36,30 @@ class MemoryRegion(object):
     def size(self):
         return self.end_addr - self.start_addr
 
+    def __lt__(self, other):
+        """MemoryRegions are sorted by their position in memory"""
+        return self.start_addr < other.start_addr
+
+    def __gt__(self, other):
+        """MemoryRegions are sorted by their position in memory"""
+        return self.start_addr > other.start_addr
+
+class MemoryRegionList(object):
+    def __init__(self):
+        self.maps = []
+
+    def append(self, memory_region):
+        # Don't sort now, sort when getting an iterator.
+        self.maps.append(memory_region)
+
+    def __iter__(self):
+        # Always return memory regions in sorted order
+        self.maps = sort(self.maps)
+        return self.maps
+
+    def __len__(self):
+        return len(self.maps)
+
 class Process(object):
     def __init__(self, pid, argv=[]):
         self.pid = pid

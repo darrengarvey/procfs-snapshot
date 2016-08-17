@@ -58,7 +58,7 @@ _smaps_string_mappings = {
     'Locked': 'locked',
 }
 
-def parse_smaps_memory_region(lines):
+def parse_smaps_memory_region(lines, has_header=True):
     """Parse a whole smaps region, which may look like:
 
 7f5c8550e000-7f5c85554000 r--p 00000000 08:06 1309629   /fonts/Arial_Bold.ttf
@@ -81,10 +81,16 @@ MMUPageSize:           9 kB
 Locked:               10 kB
 VmFlags: rd mr mw me sd"""
 
-    region = parse_smaps_header(lines[0])
+    has_header = re.match('^[0-9a-zA-Z]+-[0-9a-zA-Z]+ .*', lines[0])
+
+    if has_header:
+        region = parse_smaps_header(lines[0])
+        lines = lines[1:]
+    else:
+        region = MemoryRegion()
 
     global _smaps_string_mappings
-    for line in lines[1:]:
+    for line in lines:
         parts = re.split('[ :]+', line.strip())
         if 'Size' == parts[0]:
             # We calculate the size from the address ranges instead.
@@ -95,7 +101,7 @@ VmFlags: rd mr mw me sd"""
             # All other lines should be an amount of some type of memory.
             try:
                 region.__dict__[_smaps_string_mappings[parts[0]]] = int(parts[1]) * 1024
-            except:
+            except KeyError:
                 print ("Line not recognised: '%s'" % line)
         print ('line', line.strip())
     return region

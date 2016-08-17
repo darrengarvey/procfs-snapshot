@@ -1,5 +1,5 @@
 import re
-from smaps import parse_smaps_memory_region
+from smaps import parse_smaps_memory_region, is_memory_region_header
 
 
 class Process(object):
@@ -29,6 +29,17 @@ class ProcessList(object):
     def __len__(self):
         return len(self.processes)
 
+def _save_smaps_region(output, data):
+    data = data.strip()
+
+    if data != '':
+        region = parse_smaps_memory_region(data.split('\n'))
+        output.append(region)
+    else:
+        # It's OK if the smaps file is empty.
+        #print ('Skipping empty smaps region')
+        pass
+
 
 def read_tailed_files(stream):
     section_name = ''
@@ -38,10 +49,8 @@ def read_tailed_files(stream):
 
     print ('*****')
 
-    #while True:
     for line in stream:
-        #line = stream.readline()
-        #print ('line', line)
+        #print ('** line', line)
         if line == '':
             continue
         # tail gives us lines like:
@@ -51,22 +60,14 @@ def read_tailed_files(stream):
         # between files
         elif line.startswith('==>'):
             if current_process and section_name != '':
-                # First finish off the previous section.
+                # Hit a new file, consolidate what we have so far.
                 if 'smaps' == section_name:
-                    print ('got smaps entry: %s' % data)
-                    data = data.strip()
-
-                    if data != '':
-                        region = parse_smaps_memory_region(data.split('\n'))
-                        current_process.maps.append(region)
-                    else:
-                        # It's OK if the smaps file is empty.
-                        print ('Skipping empty smaps file')
+                    _save_smaps_region(current_process.maps, data)
                 elif 'cmdline' == section_name:
                     # Some command lines have a number of empty arguments. Ignore
                     # that because it's not interesting here.
                     current_process.argv = filter(len, data.strip().split('\0'))
-                    print ('got cmdline: %s' % current_process.argv)
+                    #print ('got cmdline: %s' % current_process.argv)
             data = ''
             section_name = ''
 
@@ -81,8 +82,13 @@ def read_tailed_files(stream):
                     print ('Error parsing tail line: %s' % line)
             else:
                 section_name = match.group(2)
+                #print ('Parsing new file: %s' % line)
                 current_process = processes.get(pid=int(match.group(1)))
 
+        elif current_process and section_name == 'smaps' and is_memory_region_header(line):
+            # We get here on reaching a new memory region in a smaps file.
+            _save_smaps_region(current_process.maps, data)
+            data = line
         elif section_name != '':
             data += line
         else:

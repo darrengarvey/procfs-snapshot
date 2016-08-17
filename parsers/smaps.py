@@ -9,7 +9,7 @@ def parse_smaps_header(header):
     # 8ec00000-8ec01000 rw-s 00000000 00:14 20   /dev/shm/NS2371 (deleted)
     # All numbers are hex except for the inode
     parts = header.split()
-    print (parts)
+    #print ('Parsing header %s' % header)
 
     # Parse the address range
     info.start_addr, info.end_addr = [int(x, 16) for x in parts[0].split('-')]
@@ -32,7 +32,8 @@ def parse_smaps_header(header):
 
     # eg. [heap]
     # or  /dev/shm/NS2371
-    info.name = parts[5]
+    if len(parts) > 5:
+        info.name = parts[5]
 
     info.deleted = header.endswith('(deleted)')
 
@@ -58,6 +59,11 @@ _smaps_string_mappings = {
     'Locked': 'locked',
 }
 
+_header_re = re.compile('^[0-9a-zA-Z]+-[0-9a-zA-Z]+ .*')
+
+def is_memory_region_header(line):
+    return re.match(_header_re, line)
+
 def parse_smaps_memory_region(lines, has_header=True):
     """Parse a whole smaps region, which may look like:
 
@@ -81,7 +87,7 @@ MMUPageSize:           9 kB
 Locked:               10 kB
 VmFlags: rd mr mw me sd"""
 
-    has_header = re.match('^[0-9a-zA-Z]+-[0-9a-zA-Z]+ .*', lines[0])
+    has_header = is_memory_region_header(lines[0])
 
     if has_header:
         region = parse_smaps_header(lines[0])
@@ -91,8 +97,11 @@ VmFlags: rd mr mw me sd"""
 
     global _smaps_string_mappings
     for line in lines:
+        #print ('Parsing line: %s' % line)
         parts = re.split('[ :]+', line.strip())
-        if 'Size' == parts[0]:
+        if len(parts) < 2:
+            print ('Skipping line & %s' % line)
+        elif 'Size' == parts[0]:
             # We calculate the size from the address ranges instead.
             pass
         elif 'VmFlags' == parts[0]:
@@ -103,5 +112,4 @@ VmFlags: rd mr mw me sd"""
                 region.__dict__[_smaps_string_mappings[parts[0]]] = int(parts[1]) * 1024
             except KeyError:
                 print ("Line not recognised: '%s'" % line)
-        print ('line', line.strip())
     return region

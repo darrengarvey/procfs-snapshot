@@ -129,6 +129,11 @@ VmFlags: rd mr mw me sd"""
         self.assertEqual(['rd', 'mr', 'mw', 'me', 'sd'],
                          info.vm_flags)
 
+    def test_smaps_header_missing_filename(self):
+        data='7f180c38f000-7f180c393000 rw-p 00000000 00:00 0\n'
+        info = parse_smaps_memory_region(data.split('\n'))
+
+        self.assertEqual(0x7f180c393000 - 0x7f180c38f000, info.size)
 
 if __name__ == '__main__':
     unittest.main()

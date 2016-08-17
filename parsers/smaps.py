@@ -1,4 +1,5 @@
 from model import SmapsPermissions, MemoryRegion
+from util import LOGGER
 import re
 
 
@@ -9,7 +10,7 @@ def parse_smaps_header(header):
     # 8ec00000-8ec01000 rw-s 00000000 00:14 20   /dev/shm/NS2371 (deleted)
     # All numbers are hex except for the inode
     parts = header.split()
-    #print ('Parsing header %s' % header)
+    LOGGER.debug('Parsing smaps header %s' % header)
 
     # Parse the address range
     info.start_addr, info.end_addr = [int(x, 16) for x in parts[0].split('-')]
@@ -97,10 +98,10 @@ VmFlags: rd mr mw me sd"""
 
     global _smaps_string_mappings
     for line in lines:
-        #print ('Parsing line: %s' % line)
+        LOGGER.debug('Parsing line: %s' % line)
         parts = re.split('[ :]+', line.strip())
         if len(parts) < 2:
-            print ('Skipping line & %s' % line)
+            LOGGER.debug('Skipping line that is too short: %s' % line)
         elif 'Size' == parts[0]:
             # We calculate the size from the address ranges instead.
             pass
@@ -111,5 +112,5 @@ VmFlags: rd mr mw me sd"""
             try:
                 region.__dict__[_smaps_string_mappings[parts[0]]] = int(parts[1]) * 1024
             except KeyError:
-                print ("Line not recognised: '%s'" % line)
+                LOGGER.warn("Line not recognised: '%s'" % line)
     return region

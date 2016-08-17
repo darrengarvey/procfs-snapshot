@@ -1,6 +1,7 @@
 import re
 from smaps import parse_smaps_memory_region, is_memory_region_header
 from model import Process, ProcessList
+from util import LOGGER
 
 def _save_smaps_region(output, data):
     data = data.strip()
@@ -20,10 +21,8 @@ def read_tailed_files(stream):
     processes = ProcessList()
     current_process = None
 
-    print ('*****')
-
     for line in stream:
-        #print ('** line', line)
+        LOGGER.debug('Got line: %s' % line)
         if line == '':
             continue
         # tail gives us lines like:
@@ -52,7 +51,7 @@ def read_tailed_files(stream):
                     pass
                 else:
                     # There's probably been an error in the little state machine.
-                    print ('Error parsing tail line: %s' % line)
+                    LOGGER.error('Error parsing tail line: %s' % line)
             else:
                 section_name = match.group(2)
                 #print ('Parsing new file: %s' % line)
@@ -65,7 +64,6 @@ def read_tailed_files(stream):
         elif section_name != '':
             data += line
         else:
-            print ('Skipping line: %s' % line)
+            LOGGER.debug('Skipping line: %s' % line)
 
-    print ('#####')
     return processes

@@ -1,5 +1,6 @@
 from subprocess import Popen, PIPE
 from parsers.tail import read_tailed_files
+from util import LOGGER
 
 def parse_args():
     from argparse import ArgumentParser
@@ -8,10 +9,15 @@ def parse_args():
                         help='connect to a remote host (recommended)')
     parser.add_argument('-u', '--user', default='root',
                         help='user to log into remote host with (default: root)')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help='enable more verbose logging')
     args = parser.parse_args()
     return args
 
 def main(args):
+    if args.verbose:
+        import logging
+        LOGGER.setLevel(logging.DEBUG)
     if args.ip == '':
         print ('Loading local procfs files')
         cmd = 'sudo bash -c "tail -n +1 /proc/*/{cmdline,smaps}"'

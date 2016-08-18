@@ -44,7 +44,8 @@ class MemoryRegion(object):
         """MemoryRegions are sorted by their position in memory"""
         return self.start_addr > other.start_addr
 
-class MemoryRegionList(object):
+
+class MemoryStats(object):
     def __init__(self):
         self.maps = []
 
@@ -64,6 +65,7 @@ class MemoryRegionList(object):
         self.maps.sort()
         return """<MemoryRegionList: len={}, from=0x{:02x}, to=0x{:02x}>""".format(
             len(self.maps), self.maps[0].start_addr, self.maps[-1].end_addr)
+
 
 class Process(object):
     def __init__(self, pid, argv=[]):

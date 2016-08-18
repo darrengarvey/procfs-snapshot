@@ -1,7 +1,8 @@
 import re
 from smaps import parse_smaps_memory_region, is_memory_region_header
-from model import Process, ProcessList, MemoryRegionList
+from model import Process, ProcessList, MemoryStats
 from util import LOGGER
+
 
 def _save_smaps_region(output, output2, data):
     data = data.strip()
@@ -20,7 +21,7 @@ def read_tailed_files(stream):
     section_name = ''
     data = ''
     processes = ProcessList()
-    maps = MemoryRegionList()
+    maps = MemoryStats()
     current_process = None
 
     for line in stream:
@@ -33,7 +34,9 @@ def read_tailed_files(stream):
         #
         # between files
         elif line.startswith('==>'):
-            if current_process and section_name != '':
+            if section_name == 'meminfo':
+                pass
+            elif current_process and section_name != '':
                 # Hit a new file, consolidate what we have so far.
                 if 'smaps' == section_name:
                     _save_smaps_region(current_process.maps, maps, data)
@@ -51,6 +54,8 @@ def read_tailed_files(stream):
                 if '/proc/self/' in line or '/proc/thread-self/' in line:
                     # We just ignore these entries.
                     pass
+                elif '/proc/meminfo' in line:
+                    section_name = 'meminfo'
                 else:
                     # There's probably been an error in the little state machine.
                     LOGGER.error('Error parsing tail line: %s' % line)

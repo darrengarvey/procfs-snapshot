@@ -25,13 +25,16 @@ def parse_args():
 
 def read_smaps(args):
     # This is the command to grap all of the necessary info.
+    # Note that -v is passed to tail - this is so we always the filename
+    # given to us, which is needed for parsing.
+    cmd = """bash -c "tail -v -n +1 /proc/%s/{cmdline,smaps} 2>/dev/null;
+tail -v -n +1 /proc/meminfo" """
     if args.ip == '':
         print ('Loading local procfs files')
-        cmd = 'sudo bash -c "tail -n +1 /proc/%s/{cmdline,smaps}"' % args.pid
+        cmd = 'sudo %s"' % (cmd % args.pid)
         stream = Popen(cmd, shell=True, bufsize=-1, stdout=PIPE).stdout
     elif args.ip != '':
-        cmd = """ssh %s@%s 'bash -c "tail -n +1 /proc/{}/{cmdline,smaps} 2>/dev/null"'""".format(
-              (args.user, args.ip, args.pid))
+        cmd = """ssh %s@%s '%s'""" % (args.user, args.ip, cmd % args.pid)
         #tail /proc/*/{cmdline,smaps}\'' % args.hostname
         stream = Popen(cmd, shell=True, bufsize=-1, stdout=PIPE).stdout
 
@@ -54,6 +57,8 @@ def main(args):
     LOGGER.info('Found {} process(es) and {} used memory fragments'.format(
                 len(processes), len(memory_regions)))
     LOGGER.info('Regions: %s' % memory_regions)
+
+
 
 if __name__ == '__main__':
     main(parse_args())

@@ -36,7 +36,7 @@ tail -v -n +1 /proc/meminfo" """
     #     --pid "`pidof foobar`"
     #
     # at some point.
-    if args.pid.isdigit():
+    if args.pid.isdigit() or args.pid == '*':
         pids = args.pid
     else:
         pids = '{%s}' % args.pid.replace(' ', ',')

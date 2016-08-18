@@ -11,4 +11,4 @@ def parse_meminfo(stats, data):
         if len(parts) < 2:
             LOGGER.debug('Skipping meminfo line that is too short: %s' % line)
 
-        stats.meminfo[parts[0]] = int(parts[1])
+        stats.meminfo[parts[0]] = int(parts[1]) * 1024

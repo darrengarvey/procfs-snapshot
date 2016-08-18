@@ -23,7 +23,7 @@ def parse_args():
     return args
 
 
-def read_smaps(args):
+def read_stats(args):
     # This is the command to grap all of the necessary info.
     # Note that -v is passed to tail - this is so we always the filename
     # given to us, which is needed for parsing.
@@ -61,15 +61,15 @@ def main(args):
         LOGGER.setLevel(logging.INFO)
 
     # Get the database handle
-    conn = Database(args.db, args.overwrite)
+    db = Database(args.db, args.overwrite)
     # Read all the data we need
-    processes, memory_regions = read_smaps(args)
+    processes, memory_stats = read_stats(args)
 
     LOGGER.info('Found {} process(es) and {} used memory fragments'.format(
-                len(processes), len(memory_regions)))
-    LOGGER.info('Regions: %s' % memory_regions)
+                len(processes), len(memory_stats)))
+    LOGGER.info('Regions: %s' % memory_stats)
 
-
+    db.add(args.ip if len(args.ip) else '[local]', memory_stats, processes)
 
 if __name__ == '__main__':
     main(parse_args())

@@ -1,3 +1,5 @@
+import re
+from util import LOGGER
 
 # Decent documentation of /proc/meminfo:
 # https://www.centos.org/docs/5/html/5.2/Deployment_Guide/s2-proc-meminfo.html
@@ -10,5 +12,5 @@ def parse_meminfo(stats, data):
         parts = re.split('[ :]+', line.strip())
         if len(parts) < 2:
             LOGGER.debug('Skipping meminfo line that is too short: %s' % line)
-
-        stats.meminfo[parts[0]] = int(parts[1]) * 1024
+        else:
+            stats.meminfo[parts[0]] = int(parts[1]) * 1024

@@ -74,9 +74,10 @@ create table memory_region
 create table memory_stats
 (
     id                  integer primary key,
-    snapshot_id         integer,
+    snapshot_id         integer not null,
     total               integer,
     free                integer,
+    mem_available       integer,
     buffers             integer,
     cached              integer,
     swap_cached         integer,
@@ -98,9 +99,11 @@ create table memory_stats
     writeback           integer,
     anon_pages          integer,
     mapped              integer,
+    shmem               integer,
     slab                integer,
     slab_reclaimable    integer,
     slab_unreclaimable  integer,
+    kernel_stack        integer,
     page_tables         integer,
     nfs_unstable        integer,
     bounce              integer,
@@ -110,6 +113,17 @@ create table memory_stats
     vmalloc_total       integer,
     vmalloc_used        integer,
     vmalloc_chunk       integer,
+    hardware_corrupted  integer,
+    anon_huge_pages     integer,
+    cma_total           integer,
+    cma_free            integer,
+    huge_pages_total    integer,
+    huge_pages_free     integer,
+    huge_pages_rsvd     integer,
+    huge_pages_surp     integer,
+    huge_page_size      integer,
+    direct_map_4k       integer,
+    direct_map_2m       integer,
 
     foreign key(snapshot_id) references snapshot(id) on delete cascade on update cascade
 );

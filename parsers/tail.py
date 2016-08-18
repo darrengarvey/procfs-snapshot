@@ -18,6 +18,19 @@ def _save_smaps_region(output, output2, data):
         pass
 
 
+def _parse_section(section_name, current_process, maps, data):
+    if section_name == 'meminfo':
+        parse_meminfo(maps, data.split('\n'))
+    elif current_process and section_name != '':
+        # Hit a new file, consolidate what we have so far.
+        if 'smaps' == section_name:
+            _save_smaps_region(current_process.maps, maps, data)
+        elif 'cmdline' == section_name:
+            # Some command lines have a number of empty arguments. Ignore
+            # that because it's not interesting here.
+            current_process.argv = filter(len, data.strip().split('\0'))
+
+
 def read_tailed_files(stream):
     section_name = ''
     data = ''
@@ -35,17 +48,7 @@ def read_tailed_files(stream):
         #
         # between files
         elif line.startswith('==>'):
-            if section_name == 'meminfo':
-                parse_meminfo(maps, data.split('\n'))
-            elif current_process and section_name != '':
-                # Hit a new file, consolidate what we have so far.
-                if 'smaps' == section_name:
-                    _save_smaps_region(current_process.maps, maps, data)
-                elif 'cmdline' == section_name:
-                    # Some command lines have a number of empty arguments. Ignore
-                    # that because it's not interesting here.
-                    current_process.argv = filter(len, data.strip().split('\0'))
-                    #print ('got cmdline: %s' % current_process.argv)
+            _parse_section(section_name, current_process, maps, data)
             data = ''
             section_name = ''
 
@@ -73,5 +76,8 @@ def read_tailed_files(stream):
             data += line
         else:
             LOGGER.debug('Skipping line: %s' % line)
+
+    # We've hit the end, parse the section we were in.
+    _parse_section(section_name, current_process, maps, data)
 
     return processes, maps

@@ -1,0 +1,1 @@
+insert into snapshot values (null, strftime('%Y-%m-%d %H:%M:%f', 'now'), ?)

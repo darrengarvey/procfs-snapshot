@@ -54,6 +54,9 @@ class MemoryStats(object):
         # Don't sort now, sort when getting an iterator.
         self.maps.append(memory_region)
 
+    def get(self, key, default=None):
+        return self.meminfo.get(key, default)
+
     def __iter__(self):
         # Always return memory regions in sorted order
         self.maps.sort()

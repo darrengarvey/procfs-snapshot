@@ -1,26 +1,26 @@
 pragma foreign_keys = on;
 
-create table MemoryType
+create table memory_type
 (
     id              integer primary key,
     str             string
 );
 
-create table Snapshot
+create table snapshot
 (
     id              integer primary key,
     ts              string,
     hostname        string
 );
 
-create table Library
+create table library
 (
     id              integer primary key,
     base_id         integer default null,
     name            string unique
 );
 
-create table Process
+create table process
 (
     snapshot_id     integer,
     pid             integer,
@@ -28,10 +28,10 @@ create table Process
     argv            string,
 
     primary key(snapshot_id, pid),
-    foreign key(snapshot_id) references Snapshot(id) on delete cascade on update cascade
+    foreign key(snapshot_id) references snapshot(id) on delete cascade on update cascade
 );
 
-create table MemoryRegion
+create table memory_region
 (
     snapshot_id         integer,
     pid                 integer,
@@ -65,13 +65,13 @@ create table MemoryRegion
     vm_flags            string,
 
     primary key(snapshot_id, pid, library_id, start_addr)
-    foreign key(snapshot_id, pid) references Process(snapshot_id, pid) on delete cascade on update cascade,
-    foreign key(library_id) references Library(id) on delete cascade,
-    foreign key(memory_type) references MemoryType(id)
+    foreign key(snapshot_id, pid) references process(snapshot_id, pid) on delete cascade on update cascade,
+    foreign key(library_id) references library(id) on delete cascade,
+    foreign key(memory_type) references memory_type(id)
 
 );
 
-create table MemoryStats
+create table memory_stats
 (
     id                  integer primary key,
     snapshot_id         integer,
@@ -111,5 +111,5 @@ create table MemoryStats
     vmalloc_used        integer,
     vmalloc_chunk       integer,
 
-    foreign key(snapshot_id) references Snapshot(id) on delete cascade on update cascade
+    foreign key(snapshot_id) references snapshot(id) on delete cascade on update cascade
 );

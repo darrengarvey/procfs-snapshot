@@ -47,7 +47,47 @@ class MemoryRegion(object):
 
 class MemoryStats(object):
     def __init__(self):
+        # Decent documentation of /proc/meminfo:
+        # https://www.centos.org/docs/5/html/5.2/Deployment_Guide/s2-proc-meminfo.html
+        # https://access.redhat.com/solutions/406773
         self.maps = []
+        self.meminfo = {}
+        self.total = 0
+        self.free = 0
+        self.buffers = 0
+        self.cached = 0
+        self.swap_cached = 0
+        self.active = 0
+        self.inactive = 0
+        self.active_anon = 0
+        self.inactive_anon = 0
+        self.active_file = 0
+        self.inactive_file = 0
+        self.unevictable = 0
+        self.mlocked = 0
+        self.high_total = 0
+        self.high_free = 0
+        self.low_total = 0
+        self.low_free = 0
+        self.swap_total =0
+        self.swap_free = 0
+        self.dirty = 0
+        self.writeback = 0
+        self.anon_pages = 0
+        self.mapped = 0
+        self.slab = 0
+        self.slab_reclaimable = 0
+        self.slab_unreclaimable = 0
+        self.page_tables = 0
+        self.nfs_unstable = 0
+        self.bounce = 0
+        self.writeback_tmp = 0
+        self.commit_limit = 0
+        self.committed_as = 0
+        self.vmalloc_total = 0
+        self.vmalloc_used = 0
+        self.vmalloc_chunk = 0
+
 
     def append(self, memory_region):
         # Don't sort now, sort when getting an iterator.

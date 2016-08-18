@@ -18,12 +18,9 @@ def parse_args():
     args = parser.parse_args()
     return args
 
-def main(args):
-    import logging
-    if args.verbose:
-        LOGGER.setLevel(logging.DEBUG)
-    else:
-        LOGGER.setLevel(logging.INFO)
+
+def read_smaps(args):
+    # This is the command to grap all of the necessary info.
     if args.ip == '':
         print ('Loading local procfs files')
         cmd = 'sudo bash -c "tail -n +1 /proc/%s/{cmdline,smaps}"' % args.pid
@@ -35,7 +32,18 @@ def main(args):
         stream = Popen(cmd, shell=True, bufsize=-1, stdout=PIPE).stdout
 
     LOGGER.info('Reading procfs with cmd: %s' % cmd)
-    processes, memory_regions = read_tailed_files(stream)
+    return read_tailed_files(stream)
+
+
+def main(args):
+    import logging
+    if args.verbose:
+        LOGGER.setLevel(logging.DEBUG)
+    else:
+        LOGGER.setLevel(logging.INFO)
+
+    # Read all the data we need
+    processes, memory_regions = read_smaps(args)
 
     LOGGER.info('Found {} process(es) and {} used memory fragments'.format(
                 len(processes), len(memory_regions)))

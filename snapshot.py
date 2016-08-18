@@ -1,5 +1,6 @@
 from subprocess import Popen, PIPE
 from parsers.tail import read_tailed_files
+from db import Database
 from util import LOGGER
 
 def parse_args():
@@ -14,7 +15,10 @@ def parse_args():
                         help='user to log into remote host with (default: root)')
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='enable more verbose logging')
-    parser.add_argument('--db', help='path to store the data to (sqlite format)')
+    parser.add_argument('--overwrite', action='store_true',
+                        help='always overwrite the db, even if it exists')
+    parser.add_argument('--db', required=True,
+                        help='path to store the data to (sqlite format)')
     args = parser.parse_args()
     return args
 
@@ -42,6 +46,8 @@ def main(args):
     else:
         LOGGER.setLevel(logging.INFO)
 
+    # Get the database handle
+    conn = Database(args.db, args.overwrite)
     # Read all the data we need
     processes, memory_regions = read_smaps(args)
 

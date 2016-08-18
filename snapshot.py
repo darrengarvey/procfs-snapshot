@@ -29,13 +29,24 @@ def read_smaps(args):
     # given to us, which is needed for parsing.
     cmd = """bash -c "tail -v -n +1 /proc/%s/{cmdline,smaps} 2>/dev/null;
 tail -v -n +1 /proc/meminfo" """
+
+    # Accept a space-separated list of pids as that is what pidof(8) returns and
+    # it's quite likely you'll want to invoke this script with something like:
+    #
+    #     --pid "`pidof foobar`"
+    #
+    # at some point.
+    if args.pid.isdigit():
+        pids = args.pid
+    else:
+        pids = '{%s}' % args.pid.replace(' ', ',')
+
     if args.ip == '':
-        print ('Loading local procfs files')
-        cmd = "sudo %s" % (cmd % args.pid)
+        LOGGER.info('Loading local procfs files')
+        cmd = "sudo %s" % (cmd % pids)
         stream = Popen(cmd, shell=True, bufsize=-1, stdout=PIPE).stdout
     elif args.ip != '':
-        cmd = """ssh %s@%s '%s'""" % (args.user, args.ip, cmd % args.pid)
-        #tail /proc/*/{cmdline,smaps}\'' % args.hostname
+        cmd = """ssh %s@%s '%s'""" % (args.user, args.ip, cmd % pids)
         stream = Popen(cmd, shell=True, bufsize=-1, stdout=PIPE).stdout
 
     LOGGER.info('Reading procfs with cmd: %s' % cmd)

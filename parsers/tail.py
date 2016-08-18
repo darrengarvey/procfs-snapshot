@@ -1,5 +1,6 @@
 import re
 from smaps import parse_smaps_memory_region, is_memory_region_header
+from meminfo import parse_meminfo
 from model import Process, ProcessList, MemoryStats
 from util import LOGGER
 
@@ -35,7 +36,7 @@ def read_tailed_files(stream):
         # between files
         elif line.startswith('==>'):
             if section_name == 'meminfo':
-                pass
+                parse_meminfo(maps, data.split('\n'))
             elif current_process and section_name != '':
                 # Hit a new file, consolidate what we have so far.
                 if 'smaps' == section_name:

@@ -101,7 +101,7 @@ VmFlags: rd mr mw me sd"""
         LOGGER.debug('Parsing line: %s' % line)
         parts = re.split('[ :]+', line.strip())
         if len(parts) < 2:
-            LOGGER.debug('Skipping line that is too short: %s' % line)
+            LOGGER.debug('Skipping smaps line that is too short: %s' % line)
         elif 'Size' == parts[0]:
             # We calculate the size from the address ranges instead.
             pass

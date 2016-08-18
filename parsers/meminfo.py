@@ -1,50 +1,14 @@
 
-# Strings found in /proc/meminfo
-_meminfo_string_mappings = {
-    'MemTotal': 'memtotal',
-    'MemFree': 'MemTotal',
-    'MemAvailable': 'MemTotal',
-    'Buffers': 'buffers',
-    'Cached': 'cached',
-    'SwapCached': 'swapcached',
-    'Active': 'active',
-    'Inactive': 'inactive',
-    'Active(anon)': 'active',
-    'Inactive(anon)': 'inactive',
-    'Active(file)': 'active',
-    'Inactive(file)': 'inactive',
-    'Unevictable': 'unevictable',
-    'Mlocked': 'mlocked',
-    'SwapTotal': 'swaptotal',
-    'SwapFree': 'swapfree',
-    'Dirty': 'dirty',
-    'Writeback': 'writeback',
-    'AnonPages': 'anonpages',
-    'Mapped': 'mapped',
-    'Shmem': 'shmem',
-    'Slab': 'slab',
-    'SReclaimable': 'sreclaimable',
-    'SUnreclaim': 'sunreclaim',
-    'KernelStack': 'kernelstack',
-    'PageTables': 'pagetables',
-    'NFS_Unstable': 'nfs_unstable',
-    'Bounce': 'bounce',
-    'WritebackTmp': 'writebacktmp',
-    'CommitLimit': 'commitlimit',
-    'Committed_AS': 'committed_as',
-    'VmallocTotal': 'vmalloctotal',
-    'VmallocUsed': 'vmallocused',
-    'VmallocChunk': 'vmallocchunk',
-    'HardwareCorrupted': 'hardwarecorrupted',
-    'AnonHugePages': 'anonhugepages',
-    'CmaTotal': 'cmatotal',
-    'CmaFree': 'cmafree',
-    'HugePages_Total': 'hugepages_total',
-    'HugePages_Free': 'hugepages_free',
-    'HugePages_Rsvd': 'hugepages_rsvd',
-    'HugePages_Surp': 'hugepages_surp',
-    'Hugepagesize': 'hugepagesize',
-    'DirectMap4k': 'directmap4k',
-    'DirectMap2M': 'directmap2m',
-}
+# Decent documentation of /proc/meminfo:
+# https://www.centos.org/docs/5/html/5.2/Deployment_Guide/s2-proc-meminfo.html
+# https://access.redhat.com/solutions/406773
 
+# An example is in test/proc-meminfo.tail
+
+def parse_meminfo(stats, data):
+    for line in data:
+        parts = re.split('[ :]+', line.strip())
+        if len(parts) < 2:
+            LOGGER.debug('Skipping meminfo line that is too short: %s' % line)
+
+        stats.meminfo[parts[0]] = int(parts[1])

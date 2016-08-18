@@ -63,9 +63,12 @@ class MemoryStats(object):
         return len(self.maps)
 
     def __repr__(self):
-        self.maps.sort()
-        return """<MemoryRegionList: len={}, from=0x{:02x}, to=0x{:02x}>""".format(
-            len(self.maps), self.maps[0].start_addr, self.maps[-1].end_addr)
+        if len(self.maps) == 0:
+            return """<MemoryStats: empty>"""
+        else:
+            self.maps.sort()
+            return """<MemoryStats: regions={}, from=0x{:02x}, to=0x{:02x}>""".format(
+                len(self.maps), self.maps[0].start_addr, self.maps[-1].end_addr)
 
 
 class Process(object):

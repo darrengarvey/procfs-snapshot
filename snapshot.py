@@ -31,7 +31,7 @@ def read_smaps(args):
 tail -v -n +1 /proc/meminfo" """
     if args.ip == '':
         print ('Loading local procfs files')
-        cmd = 'sudo %s"' % (cmd % args.pid)
+        cmd = "sudo %s" % (cmd % args.pid)
         stream = Popen(cmd, shell=True, bufsize=-1, stdout=PIPE).stdout
     elif args.ip != '':
         cmd = """ssh %s@%s '%s'""" % (args.user, args.ip, cmd % args.pid)

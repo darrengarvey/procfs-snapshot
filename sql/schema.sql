@@ -70,3 +70,46 @@ create table MemoryRegion
     foreign key(memory_type) references MemoryType(id)
 
 );
+
+create table MemoryStats
+(
+    id                  integer primary key,
+    snapshot_id         integer,
+    total               integer,
+    free                integer,
+    buffers             integer,
+    cached              integer,
+    swap_cached         integer,
+    active              integer,
+    inactive            integer,
+    active_anon         integer,
+    inactive_anon       integer,
+    active_file         integer,
+    inactive_file       integer,
+    unevictable         integer,
+    mlocked             integer,
+    high_total          integer,
+    high_free           integer,
+    low_total           integer,
+    low_free            integer,
+    swap_total          integer,
+    swap_free           integer,
+    dirty               integer,
+    writeback           integer,
+    anon_pages          integer,
+    mapped              integer,
+    slab                integer,
+    slab_reclaimable    integer,
+    slab_unreclaimable  integer,
+    page_tables         integer,
+    nfs_unstable        integer,
+    bounce              integer,
+    writeback_tmp       integer,
+    commit_limit        integer,
+    committed_as        integer,
+    vmalloc_total       integer,
+    vmalloc_used        integer,
+    vmalloc_chunk       integer,
+
+    foreign key(snapshot_id) references Snapshot(id) on delete cascade on update cascade
+);

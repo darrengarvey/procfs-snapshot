@@ -13,7 +13,7 @@ def parse_smaps_header(header):
     LOGGER.debug('Parsing smaps header %s' % header)
 
     # Parse the address range
-    info.start_addr, info.end_addr = [int(x, 16) for x in parts[0].split('-')]
+    info.start_addr, info.end_addr = [long(x, 16) for x in parts[0].split('-')]
 
     # Parse the permissions
     permissions = parts[1]
@@ -23,7 +23,7 @@ def parse_smaps_header(header):
     info.permissions.private = "p" in permissions
     info.permissions.shared = "s" in permissions
 
-    info.offset = int(parts[2], 16)
+    info.offset = long(parts[2], 16)
 
     # eg. 08:06
     info.major_dev, info.minor_dev = [int(x, 16) for x in parts[3].split(':')]
@@ -65,7 +65,7 @@ _header_re = re.compile('^[0-9a-zA-Z]+-[0-9a-zA-Z]+ .*')
 def is_memory_region_header(line):
     return re.match(_header_re, line)
 
-def parse_smaps_memory_region(lines, has_header=True):
+def parse_smaps_memory_region(pid, lines, has_header=True):
     """Parse a whole smaps region, which may look like:
 
 7f5c8550e000-7f5c85554000 r--p 00000000 08:06 1309629   /fonts/Arial_Bold.ttf
@@ -95,6 +95,8 @@ VmFlags: rd mr mw me sd"""
         lines = lines[1:]
     else:
         region = MemoryRegion(free=False)
+
+    region.pid = pid
 
     global _smaps_string_mappings
     for line in lines:

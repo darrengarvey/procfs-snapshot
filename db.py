@@ -15,6 +15,7 @@ class Database(object):
                 self.conn = sqlite3.connect(path)
         else:
             self._create_db(path)
+        self.known_libs = {}
 
     def _get_sql(self, name):
         path = os.path.join(os.path.dirname(__file__), 'sql', name)
@@ -29,9 +30,10 @@ class Database(object):
 
     def add(self, name, memory_stats, processes):
 
-        snapshot_id = self._add_snapshot(name)
+        snapshot_id = self._add_snapshot(name, commit=True)
         self._add_meminfo(snapshot_id, memory_stats)
         self._add_processes(snapshot_id, processes)
+        self._add_memory_stats(snapshot_id, memory_stats)
         self.conn.commit()
 
     def _add_snapshot(self, name, commit=False):
@@ -120,3 +122,62 @@ class Database(object):
             self.conn.commit()
 
 
+    def _add_or_get_library(self, name, commit=False):
+        """There are likely to be lots of duplicated library names
+           across a normal system, so cache libraries to avoid looking
+           them up in the db repeatedly."""
+        library_id = self.known_libs.get(name, 0)
+
+        if library_id == 0:
+            sql = self._get_sql('insert_library.sql')
+            self.conn.execute(sql, [name])
+            sql = self._get_sql('select_library.sql')
+            library_id = self.conn.execute(sql, [name]).fetchone()[0]
+            if commit:
+                self.conn.commit()
+            self.known_libs[name] = library_id
+        return library_id
+
+
+    def _add_memory_stats(self, snapshot_id, memory_stats, commit=False):
+        sql = self._get_sql('insert_memory_stats.sql')
+        for region in memory_stats.maps:
+            #print('region', region.name, region.pid, region.start_addr, region.end_addr)
+            library_id = self._add_or_get_library(region.name)
+            self.conn.execute(sql, {
+                'snapshot_id': snapshot_id,
+                'pid': region.pid,
+                'library_id': library_id,
+                'memory_type': '',
+                'free': region.free,
+                'start_addr': region.start_addr,
+                'end_addr': region.end_addr,
+                'size': region.size,
+                'offset': region.offset,
+                'inode': region.inode,
+                'readable': region.permissions.readable,
+                'writable': region.permissions.writable,
+                'executable': region.permissions.executable,
+                'shared': region.permissions.shared,
+                'private': region.permissions.private,
+                'name': region.name,
+                'rss': region.rss,
+                'pss': region.pss,
+                'shared_clean': region.shared_clean,
+                'shared_dirty': region.shared_dirty,
+                'private_clean': region.private_clean,
+                'private_dirty': region.private_dirty,
+                'referenced': region.referenced,
+                'anonymous': region.anonymous,
+                'anonymous_huge': region.anonymous_huge,
+                'shared_hugetlb': region.shared_hugetlb,
+                'private_hugetlb': region.private_hugetlb,
+                'swap': region.swap,
+                'swap_pss': region.swap_pss,
+                'kernel_page_size': region.kernel_page_size,
+                'mmu_page_size': region.mmu_page_size,
+                'locked': region.locked,
+                'vm_flags': ' '.join(region.vm_flags)
+            })
+        if commit:
+            self.conn.commit()

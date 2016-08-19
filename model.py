@@ -10,8 +10,10 @@ class SmapsPermissions(object):
 class MemoryRegion(object):
     def __init__(self, free):
         self.free = free
-        self.start_addr = 0
-        self.end_addr = 0
+        self.pid = -1
+        self.start_addr = 0L
+        self.end_addr = 0L
+        self.offset = 0L
         self.permissions = SmapsPermissions()
         self.name = ''
         self.rss = 0

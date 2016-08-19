@@ -5,13 +5,14 @@ from model import Process, ProcessList, MemoryStats
 from util import LOGGER
 
 
-def _save_smaps_region(output, output2, data):
+def _save_smaps_region(output, output2, pid, data):
     data = data.strip()
 
     if data != '':
-        region = parse_smaps_memory_region(data.split('\n'))
-        output.append(region)
-        output2.append(region)
+        region = parse_smaps_memory_region(pid, data.split('\n'))
+        if region:
+            output.append(region)
+            output2.append(region)
     else:
         # It's OK if the smaps file is empty.
         #print ('Skipping empty smaps region')
@@ -24,7 +25,7 @@ def _parse_section(section_name, current_process, maps, data):
     elif current_process and section_name != '':
         # Hit a new file, consolidate what we have so far.
         if 'smaps' == section_name:
-            _save_smaps_region(current_process.maps, maps, data)
+            _save_smaps_region(current_process.maps, maps, current_process.pid, data)
         elif 'cmdline' == section_name:
             # Some command lines have a number of empty arguments. Ignore
             # that because it's not interesting here.
@@ -70,7 +71,7 @@ def read_tailed_files(stream):
 
         elif current_process and section_name == 'smaps' and is_memory_region_header(line):
             # We get here on reaching a new memory region in a smaps file.
-            _save_smaps_region(current_process.maps, maps, data)
+            _save_smaps_region(current_process.maps, maps, current_process.pid, data)
             data = line
         elif section_name != '':
             data += line

@@ -28,10 +28,21 @@ class Database(object):
         self.conn.commit()
 
     def add(self, name, memory_stats, processes):
+
+        snapshot_id = self._add_snapshot(name)
+        self._add_meminfo(snapshot_id, memory_stats)
+        self._add_processes(snapshot_id, processes)
+        self.conn.commit()
+
+    def _add_snapshot(self, name, commit=False):
         """Add all collected info in one go"""
         sql = self._get_sql('insert_snapshot.sql')
         snapshot_id = self.conn.execute(sql, [name]).lastrowid
+        if commit:
+            self.conn.commit()
+        return snapshot_id
 
+    def _add_meminfo(self, snapshot_id, memory_stats, commit=False):
         sql = self._get_sql('insert_meminfo.sql')
         self.conn.execute(sql, {
             'snapshot_id': snapshot_id,
@@ -85,7 +96,11 @@ class Database(object):
             'direct_map_4k': memory_stats.get('DirectMap4k', 0),
             'direct_map_2m': memory_stats.get('DirectMap2M', 0)
         })
+        if commit:
+            self.conn.commit()
 
+
+    def _add_processes(self, snapshot_id, processes, commit=False):
         sql = self._get_sql('insert_process.sql')
         for process in processes:
             cmd = process.argv[0] if len(process.argv) else ''
@@ -101,7 +116,7 @@ class Database(object):
                 'cmd': cmd,
                 'argv': argv
             })
+        if commit:
+            self.conn.commit()
 
-
-        self.conn.commit()
 

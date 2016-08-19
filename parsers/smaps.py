@@ -92,6 +92,8 @@ VmFlags: rd mr mw me sd"""
 
     if has_header:
         region = parse_smaps_header(lines[0])
+        if region.name == '[vsyscall]':
+            return None
         lines = lines[1:]
     else:
         region = MemoryRegion(free=False)

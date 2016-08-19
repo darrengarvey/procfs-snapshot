@@ -100,3 +100,7 @@ class ProcessList(object):
 
     def __len__(self):
         return len(self.processes)
+
+    def __iter__(self):
+        for process in self.processes.values():
+            yield process

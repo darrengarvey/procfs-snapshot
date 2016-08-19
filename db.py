@@ -85,5 +85,23 @@ class Database(object):
             'direct_map_4k': memory_stats.get('DirectMap4k', 0),
             'direct_map_2m': memory_stats.get('DirectMap2M', 0)
         })
+
+        sql = self._get_sql('insert_process.sql')
+        for process in processes:
+            cmd = process.argv[0] if len(process.argv) else ''
+
+            if len(process.argv) > 1:
+                argv = ' '.join(process.argv[1:])
+            else:
+                argv = ''
+            #print ('%s: argv' % process.argv[0], argv)
+            self.conn.execute(sql, {
+                'snapshot_id': snapshot_id,
+                'pid': process.pid,
+                'cmd': cmd,
+                'argv': argv
+            })
+
+
         self.conn.commit()
 

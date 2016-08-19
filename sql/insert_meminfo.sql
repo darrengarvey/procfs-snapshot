@@ -50,4 +50,4 @@ insert into memory_stats values (
     :huge_page_size,
     :direct_map_4k,
     :direct_map_2m
-)
+);

@@ -54,6 +54,8 @@ class Database(object):
 
     def _add_meminfo(self, snapshot_id, memory_stats, commit=False):
         sql = self._get_sql('insert_meminfo.sql')
+        # I'm being intentionally explicit here to avoid any issues
+        # if fields are added, removed or reordered.
         self.conn.execute(sql, {
             'snapshot_id': snapshot_id,
             'total': memory_stats.get('MemTotal', 0),

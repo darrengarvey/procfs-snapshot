@@ -14,6 +14,7 @@ class SmapsHeaderParserTest(unittest.TestCase):
         # Another bunch of example lines for various cases.
         # These are faked a bit to make the tests more useful
         # (eg. offsets are faked).
+        self.pid = 12345
         self.process_line = '55917d4f7000-55917d514000 r-xp 00100000 08:06 542715                     /usr/lib/firefox/firefox'
         self.lib_line = '7f5c3f7fd000-7f5c3f7fe000 rw-p 00049000 08:06 532533                     /usr/lib/x86_64-linux-gnu/libopus.so.0.5.2'
         self.heap_line = '011e6000-01239000 rw-p 00003000 00:00 0                                  [heap]'
@@ -24,6 +25,7 @@ class SmapsHeaderParserTest(unittest.TestCase):
 
     def test_heap_parsing(self):
         info = parse_smaps_header(self.heap_line)
+
         self.assertEqual(0x011e6000, info.start_addr)
         self.assertEqual(0x01239000, info.end_addr)
         self.assertEqual(0x01239000 - 0x011e6000, info.size)
@@ -48,6 +50,7 @@ class SmapsHeaderParserTest(unittest.TestCase):
 
     def test_shared_mem_parsing(self):
         info = parse_smaps_header(self.shared_mem_line)
+
         self.assertEqual(0x7f5cabdce000, info.start_addr)
         self.assertEqual(0x7f5cabe4e000, info.end_addr)
         self.assertEqual(0x7f5cabe4e000 - 0x7f5cabdce000, info.size)
@@ -71,6 +74,9 @@ class SmapsHeaderParserTest(unittest.TestCase):
 
 
 class SmapsMemoryRegionParserTest(unittest.TestCase):
+
+    def setUp(self):
+        self.pid = 2345
     
     def test_parsing_a_full_smaps_memory_region(self):
         # Here's a full example of what we get in smaps for a memory region
@@ -95,7 +101,9 @@ MMUPageSize:           9 kB
 Locked:               10 kB
 VmFlags: rd mr mw me sd"""
 
-        info = parse_smaps_memory_region(data.split('\n'))
+        info = parse_smaps_memory_region(self.pid, data.split('\n'))
+
+        self.assertEqual(self.pid, info.pid)
 
         # We ignore the "Size" line since it's less useful than the calculated
         # size.
@@ -131,7 +139,7 @@ VmFlags: rd mr mw me sd"""
 
     def test_smaps_header_missing_filename(self):
         data='7f180c38f000-7f180c393000 rw-p 00000000 00:00 0\n'
-        info = parse_smaps_memory_region(data.split('\n'))
+        info = parse_smaps_memory_region(self.pid, data.split('\n'))
 
         self.assertEqual(0x7f180c393000 - 0x7f180c38f000, info.size)
 

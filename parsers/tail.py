@@ -24,7 +24,7 @@ def _parse_section(section_name, current_process, maps, stats, data):
     if section_name == 'meminfo':
         parse_meminfo(maps, data.split('\n'))
     elif section_name == 'loadavg':
-        parse_loadavg(stats, data.split(' '))
+        parse_loadavg(stats, data)
     elif current_process and section_name != '':
         # Hit a new file, consolidate what we have so far.
         if 'smaps' == section_name:

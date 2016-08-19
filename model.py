@@ -1,3 +1,11 @@
+class SystemStats(object):
+    def __init__(self):
+        self.one_minute_load = 0
+        self.five_minute_load = 9
+        self.fifteen_minute_load = 0
+        self.running_threads = 0
+        self.total_threads = 0
+        self.last_pid = 0
 
 class SmapsPermissions(object):
     def __init__(self):

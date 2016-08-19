@@ -1,7 +1,8 @@
 import re
 from smaps import parse_smaps_memory_region, is_memory_region_header
 from meminfo import parse_meminfo
-from model import Process, ProcessList, MemoryStats
+from loadavg import parse_loadavg
+from model import SystemStats, Process, ProcessList, MemoryStats
 from util import LOGGER
 
 
@@ -19,9 +20,11 @@ def _save_smaps_region(output, output2, pid, data):
         pass
 
 
-def _parse_section(section_name, current_process, maps, data):
+def _parse_section(section_name, current_process, maps, stats, data):
     if section_name == 'meminfo':
         parse_meminfo(maps, data.split('\n'))
+    elif section_name == 'loadavg':
+        parse_loadavg(stats, data.split(' '))
     elif current_process and section_name != '':
         # Hit a new file, consolidate what we have so far.
         if 'smaps' == section_name:
@@ -38,6 +41,7 @@ def read_tailed_files(stream):
     processes = ProcessList()
     maps = MemoryStats()
     current_process = None
+    stats = SystemStats()
 
     for line in stream:
         LOGGER.debug('Got line: %s' % line)
@@ -49,9 +53,13 @@ def read_tailed_files(stream):
         #
         # between files
         elif line.startswith('==>'):
-            _parse_section(section_name, current_process, maps, data)
+            _parse_section(section_name, current_process, maps, stats, data)
             data = ''
             section_name = ''
+
+            if '/proc/loadavg' in line:
+                section_name = 'loadavg'
+                continue
 
             # Now parse the new line.
             match = re.match(r'==> /proc/([0-9]+)/([\w]+) <==', line)
@@ -79,6 +87,6 @@ def read_tailed_files(stream):
             LOGGER.debug('Skipping line: %s' % line)
 
     # We've hit the end, parse the section we were in.
-    _parse_section(section_name, current_process, maps, data)
+    _parse_section(section_name, current_process, maps, stats, data)
 
-    return processes, maps
+    return stats, processes, maps

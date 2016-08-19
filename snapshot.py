@@ -27,8 +27,9 @@ def read_stats(args):
     # This is the command to grap all of the necessary info.
     # Note that -v is passed to tail - this is so we always the filename
     # given to us, which is needed for parsing.
-    cmd = """bash -c "tail -v -n +1 /proc/%s/{cmdline,smaps} 2>/dev/null;
-tail -v -n +1 /proc/meminfo" """
+    # As processes can be transient, we can get errors here about
+    # non-existant files, so ignore them, this is expectedself.
+    cmd = """bash -c "tail -v -n +1 /proc/%s/{cmdline,smaps} /proc/meminfo /proc/loadavg 2>/dev/null;" """
 
     # Accept a space-separated list of pids as that is what pidof(8) returns and
     # it's quite likely you'll want to invoke this script with something like:
@@ -63,13 +64,13 @@ def main(args):
     # Get the database handle
     db = Database(args.db, args.overwrite)
     # Read all the data we need
-    processes, memory_stats = read_stats(args)
+    system_stats, processes, memory_stats = read_stats(args)
 
     LOGGER.info('Found {} process(es) and {} used memory fragments'.format(
                 len(processes), len(memory_stats)))
     LOGGER.info('Regions: %s' % memory_stats)
 
-    db.add(args.ip if len(args.ip) else '[local]', memory_stats, processes)
+    db.add(args.ip if len(args.ip) else '[local]', system_stats, memory_stats, processes)
 
 if __name__ == '__main__':
     main(parse_args())

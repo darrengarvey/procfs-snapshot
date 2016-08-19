@@ -28,18 +28,26 @@ class Database(object):
         self.conn.executescript(self._get_sql('schema.sql'))
         self.conn.commit()
 
-    def add(self, name, memory_stats, processes):
+    def add(self, name, system_stats, memory_stats, processes):
 
-        snapshot_id = self._add_snapshot(name, commit=True)
+        snapshot_id = self._add_snapshot(name, system_stats, commit=True)
         self._add_meminfo(snapshot_id, memory_stats)
         self._add_processes(snapshot_id, processes)
         self._add_memory_stats(snapshot_id, memory_stats)
         self.conn.commit()
 
-    def _add_snapshot(self, name, commit=False):
+    def _add_snapshot(self, name, system_stats, commit=False):
         """Add all collected info in one go"""
         sql = self._get_sql('insert_snapshot.sql')
-        snapshot_id = self.conn.execute(sql, [name]).lastrowid
+        snapshot_id = self.conn.execute(sql, {
+            'hostname': name,
+            'one_minute_load': system_stats.one_minute_load,
+            'five_minute_load': system_stats.five_minute_load,
+            'fifteen_minute_load': system_stats.fifteen_minute_load,
+            'running_threads': system_stats.running_threads,
+            'total_threads': system_stats.total_threads,
+            'last_pid': system_stats.last_pid
+        }).lastrowid
         if commit:
             self.conn.commit()
         return snapshot_id

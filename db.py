@@ -41,6 +41,8 @@ class Database(object):
         sql = self._get_sql('insert_snapshot.sql')
         snapshot_id = self.conn.execute(sql, {
             'hostname': name,
+            'uptime': system_stats.uptime,
+            'uptime_idle': system_stats.uptime_idle,
             'one_minute_load': system_stats.one_minute_load,
             'five_minute_load': system_stats.five_minute_load,
             'fifteen_minute_load': system_stats.fifteen_minute_load,

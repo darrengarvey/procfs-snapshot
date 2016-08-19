@@ -11,6 +11,8 @@ create table snapshot
     id              integer primary key,
     ts              string,
     hostname        string,
+    uptime          real,
+    uptime_idle     real,
     one_minute      real,
     five_minute     real,
     fifteen_minute  real,

@@ -2,6 +2,7 @@ import re
 from smaps import parse_smaps_memory_region, is_memory_region_header
 from meminfo import parse_meminfo
 from loadavg import parse_loadavg
+from uptime import parse_uptime
 from model import SystemStats, Process, ProcessList, MemoryStats
 from util import LOGGER
 
@@ -25,6 +26,8 @@ def _parse_section(section_name, current_process, maps, stats, data):
         parse_meminfo(maps, data.split('\n'))
     elif section_name == 'loadavg':
         parse_loadavg(stats, data)
+    elif section_name == 'uptime':
+        parse_uptime(stats, data)
     elif current_process and section_name != '':
         # Hit a new file, consolidate what we have so far.
         if 'smaps' == section_name:
@@ -60,6 +63,10 @@ def read_tailed_files(stream):
             if '/proc/loadavg' in line:
                 section_name = 'loadavg'
                 continue
+            elif '/proc/uptime' in line:
+                section_name = 'uptime'
+                continue
+
 
             # Now parse the new line.
             match = re.match(r'==> /proc/([0-9]+)/([\w]+) <==', line)

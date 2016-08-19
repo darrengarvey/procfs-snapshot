@@ -1,8 +1,10 @@
 class SystemStats(object):
     def __init__(self):
-        self.one_minute_load = 0
-        self.five_minute_load = 9
-        self.fifteen_minute_load = 0
+        self.uptime = 0.
+        self.uptime_idle = 0.
+        self.one_minute_load = 0.
+        self.five_minute_load = 9.
+        self.fifteen_minute_load = 0.
         self.running_threads = 0
         self.total_threads = 0
         self.last_pid = 0

@@ -1,0 +1,1 @@
+insert or ignore into library values (null, null, ?);

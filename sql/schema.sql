@@ -11,13 +11,16 @@ create table snapshot
     id              integer primary key,
     ts              string,
     hostname        string,
+    -- system uptime (seconds)
     uptime          real,
+    -- seconds any CPU has spent idling, summed across all CPUs
     uptime_idle     real,
     one_minute      real,
     five_minute     real,
     fifteen_minute  real,
     running_threads integer,
     total_threads   integer,
+    -- the pid of the last spwaned process
     last_pid        integer
 );
 
@@ -35,7 +38,7 @@ create table process
     cmd             string,
     argv            string,
 
-    primary key(snapshot_id, pid),
+    primary key(snapshot_id, pid)
     foreign key(snapshot_id) references snapshot(id) on delete cascade on update cascade
 );
 
@@ -76,9 +79,9 @@ create table memory_region
     vm_flags            string,
 
     primary key(snapshot_id, pid, library_id, start_addr)
-    foreign key(snapshot_id, pid) references process(snapshot_id, pid) on delete cascade on update cascade,
-    foreign key(library_id) references library(id) on delete cascade,
-    foreign key(memory_type) references memory_type(id)
+    foreign key(snapshot_id, pid) references process(snapshot_id, pid) on delete cascade on update cascade
+    foreign key(library_id) references library(id) on delete cascade
+    --foreign key(memory_type) references memory_type(id)
 
 );
 

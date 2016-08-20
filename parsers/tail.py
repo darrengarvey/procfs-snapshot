@@ -3,6 +3,7 @@ from smaps import parse_smaps_memory_region, is_memory_region_header
 from meminfo import parse_meminfo
 from loadavg import parse_loadavg
 from uptime import parse_uptime
+from stat import parse_stat
 from model import SystemStats, Process, ProcessList, MemoryStats
 from util import LOGGER
 
@@ -36,6 +37,10 @@ def _parse_section(section_name, current_process, maps, stats, data):
             # Some command lines have a number of empty arguments. Ignore
             # that because it's not interesting here.
             current_process.argv = filter(len, data.strip().split('\0'))
+        elif 'stat' == section_name:
+            parse_stat(current_process, data)
+        else:
+            LOGGER.error('Unrecognised section name: %s' % section_name)
 
 
 def read_tailed_files(stream):
@@ -66,7 +71,9 @@ def read_tailed_files(stream):
             elif '/proc/uptime' in line:
                 section_name = 'uptime'
                 continue
-
+            elif '/proc/net/stat' in line:
+                # We don't care about this entry. Skip it.
+                continue
 
             # Now parse the new line.
             match = re.match(r'==> /proc/([0-9]+)/([\w]+) <==', line)
@@ -81,7 +88,6 @@ def read_tailed_files(stream):
                     LOGGER.error('Error parsing tail line: %s' % line)
             else:
                 section_name = match.group(2)
-                #print ('Parsing new file: %s' % line)
                 current_process = processes.get(pid=int(match.group(1)))
 
         elif current_process and section_name == 'smaps' and is_memory_region_header(line):

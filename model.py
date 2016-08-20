@@ -92,6 +92,13 @@ class Process(object):
         self.argv = argv
         # Memory maps in the process' address space.
         self.maps = []
+        # For documentation of these see parsers/stat.py
+        self.comm = ''
+        self.minor_faults = 0
+        self.major_faults = 0
+        self.user_time = 0
+        self.system_time = 0
+        self.start_time = 0
 
     @property
     def name(self):

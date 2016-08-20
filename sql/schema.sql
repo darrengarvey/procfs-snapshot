@@ -37,6 +37,13 @@ create table process
     pid             integer,
     cmd             string,
     argv            string,
+    -- the name of the executable
+    comm            string,
+    minor_faults    integer,
+    major_faults    integer,
+    user_time       integer,
+    system_time     integer,
+    start_time      integer,
 
     primary key(snapshot_id, pid)
     foreign key(snapshot_id) references snapshot(id) on delete cascade on update cascade

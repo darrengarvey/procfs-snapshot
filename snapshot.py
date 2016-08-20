@@ -29,12 +29,20 @@ def read_stats(args):
     # given to us, which is needed for parsing.
     # As processes can be transient, we can get errors here about
     # non-existant files, so ignore them, this is expectedself.
-    cmd = 'bash -c "tail -v -n +1 '\
-          '/proc/%s/{cmdline,smaps} '\
-          '/proc/meminfo '\
-          '/proc/loadavg '\
-          '/proc/uptime '\
-          '2>/dev/null;"'
+    cmd = 'bash -c "'\
+          'tail -v -n +1 '\
+              '/proc/%s/{cmdline,smaps} '\
+              '/proc/meminfo '\
+              '/proc/loadavg '\
+              '/proc/uptime '\
+          '2>/dev/null;' \
+          'tail -v -n +1 '\
+              '/proc/%s/stat '\
+          '2>/dev/null | '\
+          'awk \''\
+              '/==>/ {print \$0} '\
+              '/^[0-9]/ {print \$2, \$10, \$12, \$14, \$15, \$22}\';"'
+
 
     # Accept a space-separated list of pids as that is what pidof(8) returns and
     # it's quite likely you'll want to invoke this script with something like:
@@ -49,10 +57,10 @@ def read_stats(args):
 
     if args.ip == '':
         LOGGER.info('Loading local procfs files')
-        cmd = "sudo %s" % (cmd % pids)
+        cmd = "sudo %s" % (cmd % (pids, pids))
         stream = Popen(cmd, shell=True, bufsize=-1, stdout=PIPE).stdout
     elif args.ip != '':
-        cmd = """ssh %s@%s '%s'""" % (args.user, args.ip, cmd % pids)
+        cmd = """ssh %s@%s '%s'""" % (args.user, args.ip, cmd % (pids, pids))
         stream = Popen(cmd, shell=True, bufsize=-1, stdout=PIPE).stdout
 
     LOGGER.info('Reading procfs with cmd: %s' % cmd)

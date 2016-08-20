@@ -128,7 +128,13 @@ class Database(object):
                 'snapshot_id': snapshot_id,
                 'pid': process.pid,
                 'cmd': cmd,
-                'argv': argv
+                'argv': argv,
+                'comm': process.comm,
+                'minor_faults': process.minor_faults,
+                'major_faults': process.major_faults,
+                'user_time': process.user_time,
+                'system_time': process.system_time,
+                'start_time': process.start_time
             })
         if commit:
             self.conn.commit()

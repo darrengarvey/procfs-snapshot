@@ -1,11 +1,5 @@
 pragma foreign_keys = on;
 
-create table memory_type
-(
-    id              integer primary key,
-    str             string
-);
-
 create table snapshot
 (
     id              integer primary key,
@@ -97,7 +91,6 @@ create table memory_region
     snapshot_id         integer,
     pid                 integer,
     library_id          integer,
-    memory_type         integer,
     free                boolean,
     start_addr          unsigned big int,
     end_addr            unsigned big int,
@@ -131,8 +124,6 @@ create table memory_region
     primary key(snapshot_id, pid, library_id, start_addr)
     foreign key(snapshot_id, pid) references process(snapshot_id, pid) on delete cascade on update cascade
     foreign key(library_id) references library(id) on delete cascade
-    --foreign key(memory_type) references memory_type(id)
-
 );
 
 create table memory_stats

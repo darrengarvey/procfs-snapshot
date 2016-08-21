@@ -2,7 +2,6 @@ insert into memory_region values (
     :snapshot_id,
     :pid,
     :library_id,
-    :memory_type,
     :free,
     :start_addr,
     :end_addr,

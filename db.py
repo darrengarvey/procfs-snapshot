@@ -184,7 +184,6 @@ class Database(object):
                 'snapshot_id': snapshot_id,
                 'pid': region.pid,
                 'library_id': library_id,
-                'memory_type': '',
                 'free': region.free,
                 'start_addr': region.start_addr,
                 'end_addr': region.end_addr,

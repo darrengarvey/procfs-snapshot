@@ -48,6 +48,62 @@ class MemoryRegion(object):
     def size(self):
         return self.end_addr - self.start_addr
 
+    @property
+    def readonly(self):
+        return (self.permissions.readable and
+                not self.permissions.writable and
+                not self.permissions.executable)
+
+    @property
+    def rw(self):
+        return (self.permissions.readable and
+                self.permissions.writable and
+                not self.permissions.executable)
+
+    @property
+    def rx(self):
+        return (self.permissions.readable and
+                not self.permissions.writable and
+                self.permissions.executable)
+
+    @property
+    def rwx(self):
+        return (self.permissions.readable and
+                self.permissions.writable and
+                self.permissions.executable)
+
+    @property
+    def ro_shared(self):
+        return self.readonly and self.permissions.shared
+
+    @property
+    def ro_private(self):
+        return self.readonly and self.permissions.private
+
+    @property
+    def rw_shared(self):
+        return self.rw and self.permissions.shared
+
+    @property
+    def rw_private(self):
+        return self.rw and self.permissions.private
+
+    @property
+    def rx_shared(self):
+        return self.rx and self.permissions.shared
+
+    @property
+    def rx_private(self):
+        return self.rx and self.permissions.private
+
+    @property
+    def rwx_shared(self):
+        return self.rwx and self.permissions.shared
+
+    @property
+    def rwx_private(self):
+        return self.rwx and self.permissions.private
+
     def __lt__(self, other):
         """MemoryRegions are sorted by their position in memory"""
         return self.start_addr < other.start_addr
@@ -103,6 +159,94 @@ class Process(object):
     @property
     def name(self):
         return self.argv[0]
+
+    @property
+    def num_fragments(self):
+        return len(self.maps)
+
+    @property
+    def pss(self):
+        return sum([mem.pss for mem in self.maps])
+
+    @property
+    def heap(self):
+        return sum([mem.pss for mem in self.maps if mem.name == '[heap]'])
+
+    @property
+    def stack(self):
+        return sum([mem.pss for mem in self.maps if mem.name == '[stack]'])
+
+    @property
+    def ro_shared(self):
+        return sum([mem.pss for mem in self.maps
+                    if mem.ro_shared
+                    and mem.name not in ['[heap]', 'stack]']])
+
+    @property
+    def ro_private(self):
+        return sum([mem.pss for mem in self.maps
+                    if mem.ro_private
+                    and mem.name not in ['[heap]', 'stack]']])
+
+    @property
+    def rw_shared(self):
+        return sum([mem.pss for mem in self.maps
+                    if mem.rw_shared
+                    and mem.name not in ['[heap]', 'stack]']])
+
+    @property
+    def rw_private(self):
+        return sum([mem.pss for mem in self.maps
+                    if mem.rw_private
+                    and mem.name not in ['[heap]', 'stack]']])
+
+    @property
+    def rx_shared(self):
+        return sum([mem.pss for mem in self.maps
+                    if mem.rx_shared
+                    and mem.name not in ['[heap]', 'stack]']])
+
+    @property
+    def rx_private(self):
+        return sum([mem.pss for mem in self.maps
+                    if mem.rx_private
+                    and mem.name not in ['[heap]', 'stack]']])
+
+    @property
+    def rwx_shared(self):
+        return sum([mem.pss for mem in self.maps
+                    if mem.rwx_shared
+                    and mem.name not in ['[heap]', 'stack]']])
+
+    @property
+    def rwx_private(self):
+        return sum([mem.pss for mem in self.maps
+                    if mem.rwx_private
+                    and mem.name not in ['[heap]', 'stack]']])
+
+    @property
+    def shared_clean(self):
+        return sum([mem.shared_clean for mem in self.maps])
+
+    @property
+    def shared_dirty(self):
+        return sum([mem.shared_dirty for mem in self.maps])
+
+    @property
+    def private_clean(self):
+        return sum([mem.private_clean for mem in self.maps])
+
+    @property
+    def private_dirty(self):
+        return sum([mem.private_dirty for mem in self.maps])
+
+    @property
+    def referenced(self):
+        return sum([mem.referenced for mem in self.maps])
+
+    @property
+    def anonymous(self):
+        return sum([mem.anonymous for mem in self.maps])
 
 
 class ProcessList(object):

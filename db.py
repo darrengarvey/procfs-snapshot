@@ -134,7 +134,25 @@ class Database(object):
                 'major_faults': process.major_faults,
                 'user_time': process.user_time,
                 'system_time': process.system_time,
-                'start_time': process.start_time
+                'start_time': process.start_time,
+                'num_fragments': process.num_fragments,
+                'pss': process.pss,
+                'heap': process.heap,
+                'stack': process.stack,
+                'ro_shared': process.ro_shared,
+                'ro_private': process.ro_private,
+                'rw_shared': process.rw_shared,
+                'rw_private': process.rw_private,
+                'rx_shared': process.rx_shared,
+                'rx_private': process.rx_private,
+                'rwx_shared': process.rwx_shared,
+                'rwx_private': process.rwx_private,
+                'shared_clean': process.shared_clean,
+                'shared_dirty': process.shared_dirty,
+                'private_clean': process.private_clean,
+                'private_dirty': process.private_dirty,
+                'referenced': process.referenced,
+                'anonymous': process.anonymous
             })
         if commit:
             self.conn.commit()

@@ -1,4 +1,5 @@
 from subprocess import Popen, PIPE
+import time
 from parsers.tail import read_tailed_files
 from db import Database
 from util import LOGGER
@@ -19,7 +20,18 @@ def parse_args():
                         help='always overwrite the db, even if it exists')
     parser.add_argument('--db', required=True,
                         help='path to store the data to (sqlite format)')
+    parser.add_argument('-c', '--count', default=1, type=int,
+                        help='the number of snapshots to collect')
+    parser.add_argument('--period', type=int, default=0,
+                        help='number of seconds between subsequent snapshots')
     args = parser.parse_args()
+
+    if args.count > 1 and 0 == args.period:
+        print ('Error: You must set the period if count > 1\n')
+        parser.print_help()
+        import sys
+        sys.exit(1)
+
     return args
 
 
@@ -76,14 +88,18 @@ def main(args):
 
     # Get the database handle
     db = Database(args.db, args.overwrite)
-    # Read all the data we need
-    system_stats, processes, memory_stats = read_stats(args)
 
-    LOGGER.info('Found {} process(es) and {} used memory fragments'.format(
-                len(processes), len(memory_stats)))
-    LOGGER.info('Regions: %s' % memory_stats)
+    for i in range(args.count):
+        if i > 0:
+            time.sleep(args.period)
+        # Read all the data we need
+        system_stats, processes, memory_stats = read_stats(args)
 
-    db.add(args.ip if len(args.ip) else '[local]', system_stats, memory_stats, processes)
+        LOGGER.info('Found {} process(es) and {} used memory fragments'.format(
+                    len(processes), len(memory_stats)))
+        LOGGER.info('Regions: %s' % memory_stats)
+
+        db.add(args.ip if len(args.ip) else '[local]', system_stats, memory_stats, processes)
 
 if __name__ == '__main__':
     main(parse_args())

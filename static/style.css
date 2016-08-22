@@ -1,0 +1,67 @@
+h1, h2, h3, h4 {
+  color: #375EAB;
+  font-weight: bold;
+}
+
+.page form {
+  float: left;
+  margin-top: 30px;
+}
+
+.clear {
+  clear: both;
+}
+
+.panel {
+  position: relative;
+  float: left;
+  border: 1px solid #aaa;
+  border-radius: 5px;
+  width: auto;
+  margin-bottom: 15px;
+}
+
+.panel h1 {
+  font-size: 16px;
+  margin: 0;
+  padding: 2px 8px;
+}
+
+.panel select {
+  padding: 5px;
+  border: 0;
+  width: auto;
+  min-width: 140px;
+  overflow: hidden;
+}
+
+.panel select:focus {
+  outline: none;
+}
+
+.aside input {
+  float: left;
+  clear: left;
+}
+
+.button {
+  padding: 10px;
+  color: #222;
+  border: 1px solid #375EAB;
+  border-radius: 5px;
+  background: #E0EBF5;
+}
+
+#piechart {
+  position: relative;
+  float: left;
+}
+
+#process-view {
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
+  border: none;
+  border-top: 1px dotted #375EAB;
+  overflow: hidden;
+}

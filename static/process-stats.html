@@ -1,0 +1,34 @@
+<html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1">
+    <head>
+        <link rel="stylesheet" href="/static/style.css"/>
+        <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+        <script type="text/javascript">
+          google.load("visualization", "1", {packages:["corechart"]});
+          google.setOnLoadCallback(drawChart);
+          function drawChart() {
+            var data = google.visualization.arrayToDataTable(
+                <script t:render="data" />
+            );
+
+            var options = <script t:render="options" />;
+
+            var chart = new google.visualization.PieChart(
+                document.getElementById('piechart'));
+            chart.draw(data, options);
+            google.visualization.events.addListener(chart, 'select', function() {
+                var selected = chart.getSelection()[0];
+                options.slices = {};
+                options.slices[selected.row] = { offset: 0.3 };
+                chart.draw(data, options);
+            });
+          }
+        </script>
+    </head>
+    <body>
+        <div class="page">
+            <div id="piechart" class="main-content graph-container"></div>
+            <div class="clear"></div>
+        </div>
+        <iframe id="process-view" src="" scrolling="no" seamless="seamless" />
+    </body>
+</html>

@@ -1,0 +1,56 @@
+<html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1">
+  <head>
+    <link rel="stylesheet" href="/static/style.css"/>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+      google.load("visualization", "1", {packages:["corechart"]});
+      google.setOnLoadCallback(drawChart);
+      function drawChart() {
+        var data = google.visualization.arrayToDataTable(
+            <t:transparent t:render="data" />
+        );
+
+        var options = <t:transparent t:render="options" />;
+
+        var snapshot = <t:transparent t:render="snapshot" />;
+
+        var processes = <t:transparent t:render="processes" />;
+
+        var field = "<t:transparent t:render="current_field" />";
+
+        var chart = new google.visualization.PieChart(document.getElementById('piechart'));
+        var process_view = document.getElementById("process-view");
+        chart.draw(data, options);
+        google.visualization.events.addListener(chart, 'select', function() {
+            var selected = chart.getSelection()[0];
+            options.slices = {};
+            options.slices[selected.row] = { offset: 0.3 };
+            var id = processes[selected.row];
+            // TODO: Do I really need to hack the ampersand in there to make this
+            //       a valid xhtml file? Twisted complains during sax parsing
+            //       otherwise.
+            process_view.setAttribute("src", "/process/?snapshot=" + snapshot + "\u0026pid=" + id + "\u0026field=" + field);
+            chart.draw(data, options);
+        });
+      }
+    </script>
+  </head>
+  <body>
+    <div class="page">
+      <div class="aside">
+        <form>
+          <div class="panel">
+            <h1 t:render="field_title" />
+            <select name="field" size="4">
+              <option t:render="fields" />
+            </select>
+          </div>
+          <input class="button" type="submit" value="Refresh" />
+          </form>
+        </div>
+        <div id="piechart" class="main-content graph-container"></div>
+        <div class="clear"></div>
+    </div>
+    <iframe id="process-view" src="" scrolling="no" seamless="seamless" />
+  </body>
+</html>

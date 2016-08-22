@@ -1,0 +1,37 @@
+<html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1">
+  <head>
+    <link rel="stylesheet" href="/static/style.css"/>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+      google.load("visualization", "1", {packages:["corechart"]});
+      google.setOnLoadCallback(drawChart);
+      function drawChart() {
+        var raw_data = <t:transparent t:render="data" />;
+        var data = google.visualization.arrayToDataTable(
+          raw_data
+        );
+
+        var options = <t:transparent t:render="options" />;
+
+        var chart = new google.visualization.LineChart(document.getElementById('chart'));
+        var snapshot_view = document.getElementById("snapshot-view");
+        chart.draw(data, options);
+        google.visualization.events.addListener(chart, 'select', function() {
+            var selected = chart.getSelection()[0];
+            snapshot_date = raw_data[selected.row + 1][0];
+            snapshot_view.setAttribute("src",
+              "/snapshot/?snapshot_date=" + snapshot_date);
+        });
+      }
+    </script>
+  </head>
+  <body>
+    <div class="page">
+      <div class="aside">
+      </div>
+      <div id="chart" class="main-content graph-container"></div>
+      <div class="clear"></div>
+    </div>
+    <iframe id="snapshot-view" src="" scrolling="no" seamless="seamless" width="100%" height="100%" />
+  </body>
+</html>

@@ -18,12 +18,17 @@ create table snapshot
     last_pid        integer
 );
 
+create index snapshot_ts_idx on snapshot(ts);
+
 create table library
 (
     id              integer primary key,
     base_id         integer default null,
     name            string unique
 );
+
+-- libraries are queried by name during an update.
+create index library_name_idx on library(name);
 
 create table process
 (
@@ -85,6 +90,9 @@ create table process
     primary key(snapshot_id, pid)
     foreign key(snapshot_id) references snapshot(id) on delete cascade on update cascade
 );
+
+create index process_snap_id_idx on process(snapshot_id);
+create index process_cmd_idx on process(cmd);
 
 create table memory_region
 (

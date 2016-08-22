@@ -28,6 +28,27 @@ class Database(object):
         self.conn.executescript(self._get_sql('schema.sql'))
         self.conn.commit()
 
+    def get_process_cmdlines(self, name='%'):
+        sql = self._get_sql('select_process_cmdlines.sql')
+        for process in self.conn.execute(sql, { 'name': name }):
+            yield process
+
+    def get_process_stats(self, name='%'):
+        sql = self._get_sql('select_process_stats.sql')
+        for process in self.conn.execute(sql, { 'name': name }):
+            yield process
+
+    def get_process_info(self, snapshot_id, name='%'):
+        sql = self._get_sql('select_process_info.sql')
+        for process in self.conn.execute(sql, {
+                'snapshot_id': snapshot_id,
+                'name': name }):
+            yield process
+
+    def get_snapshot_id(self, timestamp):
+        sql = self._get_sql('select_snapshot_id.sql')
+        return self.conn.execute(sql, { 'ts': timestamp }).fetchone()[0]
+
     def add(self, name, system_stats, memory_stats, processes):
 
         snapshot_id = self._add_snapshot(name, system_stats, commit=True)

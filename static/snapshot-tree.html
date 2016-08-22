@@ -1,0 +1,34 @@
+<html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1">
+  <head>
+    <link rel="stylesheet" href="/static/style.css"/>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+      google.load("visualization", "1", {packages:["treemap"]});
+      google.setOnLoadCallback(drawChart);
+      function drawChart() {
+        var data = google.visualization.arrayToDataTable(
+            <t:transparent t:render="data" />
+        );
+
+        var options = <t:transparent t:render="options" />;
+
+        var snapshot = <t:transparent t:render="snapshot" />;
+
+        var chart = new google.visualization.TreeMap(
+          document.getElementById('chart'));
+        var snapshot_view = document.getElementById("snapshot-view");
+        chart.draw(data, options);
+      }
+    </script>
+  </head>
+  <body>
+    <div class="page">
+      <div class="aside">
+      </div>
+      <a t:render="prev_link">Previous</a> | <a t:render="next_link">Next</a>
+      <div id="chart" class="main-content graph-container"></div>
+      <div class="clear"></div>
+    </div>
+    <div id="snapshot-view" src="" scrolling="no" seamless="seamless"></div>
+  </body>
+</html>

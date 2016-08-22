@@ -18,7 +18,7 @@ def parse_args():
                         help='enable more verbose logging')
     parser.add_argument('--overwrite', action='store_true',
                         help='always overwrite the db, even if it exists')
-    parser.add_argument('--db', required=True,
+    parser.add_argument('-d', '--db', required=True,
                         help='path to store the data to (sqlite format)')
     parser.add_argument('-c', '--count', default=1, type=int,
                         help='the number of snapshots to collect')

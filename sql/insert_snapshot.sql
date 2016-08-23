@@ -18,5 +18,7 @@ insert into snapshot values (
     :pages_allocated_normal,
     :pages_freed,
     :pages_activated,
-    :pages_deactivated
+    :pages_deactivated,
+    :pages_outrun,
+    :alloc_stalled
 );

@@ -1,5 +1,6 @@
 import os
 import sqlite3
+from model import Library
 
 
 class Database(object):
@@ -55,6 +56,7 @@ class Database(object):
         self._add_meminfo(snapshot_id, memory_stats)
         self._add_processes(snapshot_id, processes)
         self._add_memory_stats(snapshot_id, memory_stats)
+        self._add_libraries()
         self.conn.commit()
 
     def _add_snapshot(self, name, system_stats, commit=False):
@@ -81,7 +83,7 @@ class Database(object):
             'pages_freed': system_stats.vmstats['pgfree'],
             'pages_activated': system_stats.vmstats['pgactivate'],
             'pages_deactivated': system_stats.vmstats['pgdeactivate'],
-            'pages_deactivated': system_stats.vmstats['pageoutrun'],
+            'pages_outrun': system_stats.vmstats['pageoutrun'],
             'alloc_stalled': system_stats.vmstats['allocstall'],
         }).lastrowid
         if commit:
@@ -192,32 +194,58 @@ class Database(object):
             self.conn.commit()
 
 
-    def _add_or_get_library(self, name, commit=False):
+    def _account_library(self, snapshot_id, inode, name, pss):
         """There are likely to be lots of duplicated library names
            across a normal system, so cache libraries to avoid looking
            them up in the db repeatedly."""
-        library_id = self.known_libs.get(name, 0)
 
-        if library_id == 0:
+        # inode 0 is for memory fragments that aren't real files,
+        # eg. [heap], [vdso], etc.
+        if inode == 0:
+            return
+
+        # When using sandboxing, bind-mounting or symlinks, libraries may
+        # show up in smaps with different paths. If the inode is the same
+        # - on the same snapshot - then we can be sure the library is
+        # actually the same one. The libraries are added to their own table
+        # so statistics can be aggregated for them.
+        basename = os.path.basename(name)
+        if inode in self.known_libs:
+            library = self.known_libs[inode]
+        else:
+            library = Library(basename, inode, snapshot_id)
+            self.known_libs[inode] = library
+
+        library.pss += pss
+        library.shared_count += 1
+        library.num_fragments += 1
+
+    def _add_libraries(self, commit=False):
+        for lib in self.known_libs.values():
             sql = self._get_sql('insert_library.sql')
-            self.conn.execute(sql, [name])
-            sql = self._get_sql('select_library.sql')
-            library_id = self.conn.execute(sql, [name]).fetchone()[0]
-            if commit:
-                self.conn.commit()
-            self.known_libs[name] = library_id
-        return library_id
+            self.conn.execute(sql, {
+                'snapshot_id': lib.snapshot_id,
+                'inode': lib.inode,
+                'name': lib.name,
+                'pss': lib.pss,
+                'num_fragments': lib.num_fragments,
+                'shared_count': lib.shared_count
+            })
 
+        if commit:
+            self.conn.commit()
 
     def _add_memory_stats(self, snapshot_id, memory_stats, commit=False):
         sql = self._get_sql('insert_memory_stats.sql')
         for region in memory_stats.maps:
             #print('region', region.name, region.pid, region.start_addr, region.end_addr)
-            library_id = self._add_or_get_library(region.name)
+            self._account_library(snapshot_id,
+                                  region.inode,
+                                  region.name,
+                                  region.pss)
             self.conn.execute(sql, {
                 'snapshot_id': snapshot_id,
                 'pid': region.pid,
-                'library_id': library_id,
                 'free': region.free,
                 'start_addr': region.start_addr,
                 'end_addr': region.end_addr,
@@ -248,5 +276,6 @@ class Database(object):
                 'locked': region.locked,
                 'vm_flags': ' '.join(region.vm_flags)
             })
+
         if commit:
             self.conn.commit()

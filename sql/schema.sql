@@ -27,7 +27,7 @@ create table snapshot
     pages_freed             integer,
     pages_activated         integer,
     pages_deactivated       integer,
-    pageoutrun,
+    pages_outrun            integer,
     -- the number of times allocation triggered kswapd
     alloc_stalled           integer
 
@@ -37,13 +37,20 @@ create index snapshot_ts_idx on snapshot(ts);
 
 create table library
 (
-    id              integer primary key,
-    base_id         integer default null,
-    name            string unique
+    snapshot_id     integer,
+    inode           integer,
+    name            string,
+    pss             integer,
+    num_fragments   integer,
+    shared_count    integer,
+
+    primary key (snapshot_id, inode)
+    foreign key(snapshot_id) references snapshot(id) on delete cascade on update cascade
 );
 
 -- libraries are queried by name during an update.
 create index library_name_idx on library(name);
+create index library_inode_idx on library(inode);
 
 create table process
 (
@@ -113,7 +120,6 @@ create table memory_region
 (
     snapshot_id         integer,
     pid                 integer,
-    library_id          integer,
     free                boolean,
     start_addr          unsigned big int,
     end_addr            unsigned big int,
@@ -144,9 +150,8 @@ create table memory_region
     locked              integer,
     vm_flags            string,
 
-    primary key(snapshot_id, pid, library_id, start_addr)
+    primary key(snapshot_id, pid, start_addr)
     foreign key(snapshot_id, pid) references process(snapshot_id, pid) on delete cascade on update cascade
-    foreign key(library_id) references library(id) on delete cascade
 );
 
 create table memory_stats

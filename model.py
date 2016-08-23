@@ -143,6 +143,15 @@ class MemoryStats(object):
                 len(self.maps), self.maps[0].start_addr, self.maps[-1].end_addr)
 
 
+class Library(object):
+    def __init__(self, name, inode, snapshot_id):
+        self.name = name
+        self.inode = inode
+        self.snapshot_id = snapshot_id
+        self.pss = 0
+        self.num_fragments = 0
+        self.shared_count = 0
+
 class Process(object):
     def __init__(self, pid, argv=[]):
         self.pid = pid

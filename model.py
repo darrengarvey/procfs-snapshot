@@ -152,6 +152,21 @@ class Library(object):
         self.num_fragments = 0
         self.shared_count = 0
 
+
+# Private helper functions
+def _is_stack(mem):
+    # stack space can show up as [stack] or [stack:1234]
+    return mem.name[:6] == '[stack'
+
+def _is_heap(mem):
+    # stack space can show up as [stack] or [stack:1234]
+    return mem.name == '[heap]'
+
+def _not_heap_or_stack(mem):
+    # stack space can show up as [stack] or [stack:1234]
+    return not mem.name[:6] in ['[heap]', '[stack']
+
+
 class Process(object):
     def __init__(self, pid, argv=[]):
         self.pid = pid
@@ -180,59 +195,51 @@ class Process(object):
 
     @property
     def heap(self):
-        return sum([mem.pss for mem in self.maps if mem.name == '[heap]'])
+        return sum([mem.pss for mem in self.maps if _is_heap(mem)])
 
     @property
     def stack(self):
-        return sum([mem.pss for mem in self.maps if mem.name == '[stack]'])
+        return sum([mem.pss for mem in self.maps if _is_stack(mem)])
 
     @property
     def ro_shared(self):
         return sum([mem.pss for mem in self.maps
-                    if mem.ro_shared
-                    and mem.name not in ['[heap]', 'stack]']])
+                    if mem.ro_shared and _not_heap_or_stack(mem)])
 
     @property
     def ro_private(self):
         return sum([mem.pss for mem in self.maps
-                    if mem.ro_private
-                    and mem.name not in ['[heap]', 'stack]']])
+                    if mem.ro_private and _not_heap_or_stack(mem)])
 
     @property
     def rw_shared(self):
         return sum([mem.pss for mem in self.maps
-                    if mem.rw_shared
-                    and mem.name not in ['[heap]', 'stack]']])
+                    if mem.rw_shared and _not_heap_or_stack(mem)])
 
     @property
     def rw_private(self):
         return sum([mem.pss for mem in self.maps
-                    if mem.rw_private
-                    and mem.name not in ['[heap]', 'stack]']])
+                    if mem.rw_private and _not_heap_or_stack(mem)])
 
     @property
     def rx_shared(self):
         return sum([mem.pss for mem in self.maps
-                    if mem.rx_shared
-                    and mem.name not in ['[heap]', 'stack]']])
+                    if mem.rx_shared and _not_heap_or_stack(mem)])
 
     @property
     def rx_private(self):
         return sum([mem.pss for mem in self.maps
-                    if mem.rx_private
-                    and mem.name not in ['[heap]', 'stack]']])
+                    if mem.rx_private and _not_heap_or_stack(mem)])
 
     @property
     def rwx_shared(self):
         return sum([mem.pss for mem in self.maps
-                    if mem.rwx_shared
-                    and mem.name not in ['[heap]', 'stack]']])
+                    if mem.rwx_shared and _not_heap_or_stack(mem)])
 
     @property
     def rwx_private(self):
         return sum([mem.pss for mem in self.maps
-                    if mem.rwx_private
-                    and mem.name not in ['[heap]', 'stack]']])
+                    if mem.rwx_private and _not_heap_or_stack(mem)])
 
     @property
     def shared_clean(self):

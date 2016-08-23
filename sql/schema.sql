@@ -2,20 +2,35 @@ pragma foreign_keys = on;
 
 create table snapshot
 (
-    id              integer primary key,
-    ts              string,
-    hostname        string,
+    id                      integer primary key,
+    ts                      string,
+    hostname                string,
     -- system uptime (seconds)
-    uptime          real,
+    uptime                  real,
     -- seconds any CPU has spent idling, summed across all CPUs
-    uptime_idle     real,
-    one_minute      real,
-    five_minute     real,
-    fifteen_minute  real,
-    running_threads integer,
-    total_threads   integer,
+    uptime_idle             real,
+    one_minute              real,
+    five_minute             real,
+    fifteen_minute          real,
+    running_threads         integer,
+    total_threads           integer,
     -- the pid of the last spwaned process
-    last_pid        integer
+    last_pid                integer,
+
+    -- interesting info from /proc/vmstat
+    free_pages              integer,
+    pages_paged_in          integer,
+    pages_paged_out         integer,
+    pages_swapped_in        integer,
+    pages_swapped_out       integer,
+    pages_allocated_normal  integer,
+    pages_freed             integer,
+    pages_activated         integer,
+    pages_deactivated       integer,
+    pageoutrun,
+    -- the number of times allocation triggered kswapd
+    alloc_stalled           integer
+
 );
 
 create index snapshot_ts_idx on snapshot(ts);

@@ -46,6 +46,7 @@ def read_stats(args):
               '/proc/meminfo '\
               '/proc/loadavg '\
               '/proc/uptime '\
+              '/proc/vmstat '\
           '2>/dev/null &&' \
           'tail -v -n +1 '\
               '/proc/%s/stat '\

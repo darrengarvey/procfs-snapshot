@@ -9,5 +9,14 @@ insert into snapshot values (
     :fifteen_minute_load,
     :running_threads,
     :total_threads,
-    :last_pid
+    :last_pid,
+    :free_pages,
+    :pages_paged_in,
+    :pages_paged_out,
+    :pages_swapped_in,
+    :pages_swapped_out,
+    :pages_allocated_normal,
+    :pages_freed,
+    :pages_activated,
+    :pages_deactivated
 );

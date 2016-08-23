@@ -68,8 +68,21 @@ class Database(object):
             'five_minute_load': system_stats.five_minute_load,
             'fifteen_minute_load': system_stats.fifteen_minute_load,
             'running_threads': system_stats.running_threads,
+            'minor_page_faults': system_stats.vmstats['pgfault'],
+            'major_page_faults': system_stats.vmstats['pgmajfault'],
             'total_threads': system_stats.total_threads,
-            'last_pid': system_stats.last_pid
+            'last_pid': system_stats.last_pid,
+            'free_pages': system_stats.vmstats['nr_free_pages'],
+            'pages_paged_in': system_stats.vmstats['pgpgin'],
+            'pages_paged_out': system_stats.vmstats['pgpgout'],
+            'pages_swapped_in': system_stats.vmstats['pswpin'],
+            'pages_swapped_out': system_stats.vmstats['pswpout'],
+            'pages_allocated_normal': system_stats.vmstats['pgalloc_normal'],
+            'pages_freed': system_stats.vmstats['pgfree'],
+            'pages_activated': system_stats.vmstats['pgactivate'],
+            'pages_deactivated': system_stats.vmstats['pgdeactivate'],
+            'pages_deactivated': system_stats.vmstats['pageoutrun'],
+            'alloc_stalled': system_stats.vmstats['allocstall'],
         }).lastrowid
         if commit:
             self.conn.commit()

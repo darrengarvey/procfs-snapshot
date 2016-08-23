@@ -4,6 +4,7 @@ from meminfo import parse_meminfo
 from loadavg import parse_loadavg
 from uptime import parse_uptime
 from stat import parse_stat
+from vmstat import parse_vmstat
 from model import SystemStats, Process, ProcessList, MemoryStats
 from util import LOGGER
 
@@ -29,6 +30,8 @@ def _parse_section(section_name, current_process, maps, stats, data):
         parse_loadavg(stats, data)
     elif section_name == 'uptime':
         parse_uptime(stats, data)
+    elif section_name == 'vmstat':
+        parse_vmstat(stats, data)
     elif current_process and section_name != '':
         # Hit a new file, consolidate what we have so far.
         if 'smaps' == section_name:
@@ -70,6 +73,9 @@ def read_tailed_files(stream):
                 continue
             elif '/proc/uptime' in line:
                 section_name = 'uptime'
+                continue
+            elif '/proc/vmstat' in line:
+                section_name = 'vmstat'
                 continue
             elif '/proc/net/stat' in line:
                 # We don't care about this entry. Skip it.

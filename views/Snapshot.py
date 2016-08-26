@@ -57,9 +57,10 @@ class SnapshotView(resource.Resource):
         "OtherReadOnlyUSS": "USS other read only size (Kb)",
     }
 
-    def __init__(self, db):
+    def __init__(self, db, process_name_filter):
         resource.Resource.__init__(self)
         self.db = db
+        self.process_name_filter = process_name_filter
 
     def renderOutput(self, output):
         self.output = output
@@ -102,7 +103,8 @@ class SnapshotView(resource.Resource):
 
         extra_data = []
         units = 1024 * 1024 # Units in MB
-        for row in self.db.get_process_info(snapshot_id=snapshot, name='%opt%'):
+        for row in self.db.get_process_info(snapshot_id=snapshot,
+                                            name=self.process_name_filter):
             # Unfortunately we need to make every entry unique, so add
             # the pid into the description of the entries.
             pid = int(row[0])

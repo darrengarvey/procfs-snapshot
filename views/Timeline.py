@@ -47,9 +47,10 @@ class TimelineView(resource.Resource):
     isLeaf = False
     output = ''
 
-    def __init__(self, db):
+    def __init__(self, db, process_name_filter):
         resource.Resource.__init__(self)
         self.db = db
+        self.process_name_filter = process_name_filter
 
     def renderOutput(self, output):
         self.output = output
@@ -71,14 +72,14 @@ class TimelineView(resource.Resource):
         data = [['Timestamp']]
 
         # Add the list of processes to the timeline table.
-        for row in self.db.get_process_cmdlines(name='%opt%'):
+        for row in self.db.get_process_cmdlines(name=self.process_name_filter):
             processes.append(row[0])
             data[0].append(row[1].strip())
 
         LOGGER.debug('got process data: %s' % data)
 
         # Now add the top-level PSS values for the processes to the table.
-        for row in self.db.get_process_stats(name='%opt%'):
+        for row in self.db.get_process_stats(name=self.process_name_filter):
             timestamp = row[0]
             if timestamp == data[-1][0]:
                 # Got another process in the same snapshot

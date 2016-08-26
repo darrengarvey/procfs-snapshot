@@ -54,60 +54,68 @@ create index library_inode_idx on library(inode);
 
 create table process
 (
-    snapshot_id     integer,
-    pid             integer,
-    cmd             string,
-    argv            string,
+    snapshot_id         integer,
+    pid                 integer,
+    cmd                 string,
+    argv                string,
     -- the name of the executable
-    comm            string,
-    minor_faults    integer,
-    major_faults    integer,
-    user_time       integer,
-    system_time     integer,
-    start_time      integer,
+    comm                string,
+    minor_faults        integer,
+    major_faults        integer,
+    user_time           integer,
+    system_time         integer,
+    start_time          integer,
 
-    num_fragments   integer,
-    pss             integer,
-    heap            integer,
-    stack           integer,
+    num_fragments       integer,
+    pss                 integer,
+    heap                integer,
+    stack               integer,
 
     -- summed pss of read-only shared pages
-    ro_shared       integer,
+    ro_shared           integer,
+    ro_shared_file      integer,
     -- summed pss of read-only private pages
-    ro_private      integer,
+    ro_private          integer,
+    ro_private_file     integer,
     -- summed pss of read-write shared pages
-    rw_shared       integer,
+    rw_shared           integer,
+    rw_shared_file      integer,
     -- summed pss of read-write private pages
-    rw_private      integer,
+    rw_private          integer,
+    rw_private_file     integer,
     -- summed pss of readable and executable shared pages
-    rx_shared       integer,
+    rx_shared          integer,
+    rx_shared_file      integer,
     -- summed pss of readable and executable private pages
-    rx_private      integer,
+    rx_private          integer,
+    rx_private_file     integer,
     -- you'd really not expect shared rwx pages. sounds dangerous!
-    rwx_shared      integer,
+    rwx_shared          integer,
+    rwx_shared_file     integer,
     -- potentially dangerous, but on some architectures (eg. MIPS),
     -- the heap and stack fit into this category.
-    rwx_private     integer,
+    rwx_private         integer,
+    rwx_private_file    integer,
 
     -- summed shared_clean values from memory regions. These
     -- values are RSS though, so a bit misleading.
-    shared_clean    integer,
+    shared_clean        integer,
     -- summed shared_dirty values from memory regions. These
     -- values are RSS though, so a bit misleading.
-    shared_dirty    integer,
+    shared_dirty        integer,
     -- summed private_clean values from memory regions. These
     -- values are RSS but as they are private the numbers are
     -- useful.
-    private_clean   integer,
+    private_clean       integer,
     -- summed private_dirty values from memory regions. These
     -- values are RSS but as they are private the numbers are
     -- useful.
-    private_dirty   integer,
+    private_dirty       integer,
     -- summed referenced values from memory regions. This is useful
     -- to see how much memory the process is actually using. See
     -- /proc/sys/vm/clear_refs for how to make best use of this.
-    referenced      integer,
-    anonymous       integer,
+    referenced          integer,
+    anonymous           integer,
 
     primary key(snapshot_id, pid)
     foreign key(snapshot_id) references snapshot(id) on delete cascade on update cascade

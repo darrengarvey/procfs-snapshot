@@ -204,42 +204,98 @@ class Process(object):
     @property
     def ro_shared(self):
         return sum([mem.pss for mem in self.maps
-                    if mem.ro_shared and _not_heap_or_stack(mem)])
+                    if mem.ro_shared and _not_heap_or_stack(mem)
+                    and mem.inode == 0])
+
+    @property
+    def ro_shared_file(self):
+        return sum([mem.pss for mem in self.maps
+                    if mem.ro_shared and _not_heap_or_stack(mem)
+                    and mem.inode != 0])
 
     @property
     def ro_private(self):
         return sum([mem.pss for mem in self.maps
-                    if mem.ro_private and _not_heap_or_stack(mem)])
+                    if mem.ro_private and _not_heap_or_stack(mem)
+                    and mem.inode == 0])
+
+    @property
+    def ro_private_file(self):
+        return sum([mem.pss for mem in self.maps
+                    if mem.ro_private and _not_heap_or_stack(mem)
+                    and mem.inode != 0])
 
     @property
     def rw_shared(self):
         return sum([mem.pss for mem in self.maps
-                    if mem.rw_shared and _not_heap_or_stack(mem)])
+                    if mem.rw_shared and _not_heap_or_stack(mem)
+                    and mem.inode == 0])
+
+    @property
+    def rw_shared_file(self):
+        return sum([mem.pss for mem in self.maps
+                    if mem.rw_shared and _not_heap_or_stack(mem)
+                    and mem.inode != 0])
 
     @property
     def rw_private(self):
         return sum([mem.pss for mem in self.maps
-                    if mem.rw_private and _not_heap_or_stack(mem)])
+                    if mem.rw_private and _not_heap_or_stack(mem)
+                    and mem.inode == 0])
+
+    @property
+    def rw_private_file(self):
+        return sum([mem.pss for mem in self.maps
+                    if mem.rw_private and _not_heap_or_stack(mem)
+                    and mem.inode != 0])
 
     @property
     def rx_shared(self):
         return sum([mem.pss for mem in self.maps
-                    if mem.rx_shared and _not_heap_or_stack(mem)])
+                    if mem.rx_shared and _not_heap_or_stack(mem)
+                    and mem.inode == 0])
+
+    @property
+    def rx_shared_file(self):
+        return sum([mem.pss for mem in self.maps
+                    if mem.rx_shared and _not_heap_or_stack(mem)
+                    and mem.inode != 0])
 
     @property
     def rx_private(self):
         return sum([mem.pss for mem in self.maps
-                    if mem.rx_private and _not_heap_or_stack(mem)])
+                    if mem.rx_private and _not_heap_or_stack(mem)
+                    and mem.inode == 0])
+
+    @property
+    def rx_private_file(self):
+        return sum([mem.pss for mem in self.maps
+                    if mem.rx_private and _not_heap_or_stack(mem)
+                    and mem.inode != 0])
 
     @property
     def rwx_shared(self):
         return sum([mem.pss for mem in self.maps
-                    if mem.rwx_shared and _not_heap_or_stack(mem)])
+                    if mem.rwx_shared and _not_heap_or_stack(mem)
+                    and mem.inode != 0])
+
+    @property
+    def rwx_shared_file(self):
+        return sum([mem.pss for mem in self.maps
+                    if mem.rwx_shared and _not_heap_or_stack(mem)
+                    and mem.inode != 0])
 
     @property
     def rwx_private(self):
         return sum([mem.pss for mem in self.maps
-                    if mem.rwx_private and _not_heap_or_stack(mem)])
+                    if mem.rwx_private and _not_heap_or_stack(mem)
+                    and mem.inode == 0])
+
+    @property
+    def rwx_private_file(self):
+        return sum([mem.pss for mem in self.maps
+                    if mem.rwx_private and _not_heap_or_stack(mem)
+                    and mem.inode != 0])
 
     @property
     def shared_clean(self):

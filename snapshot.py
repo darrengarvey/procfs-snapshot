@@ -1,4 +1,5 @@
 from subprocess import Popen, PIPE
+from sh import whoami
 import sys
 import time
 from parsers.tail import read_tailed_files
@@ -71,7 +72,10 @@ def read_stats(args):
 
     if args.ip == '':
         LOGGER.info('Loading local procfs files')
-        cmd = "sudo bash -c \"%s\"" % (cmd % (pids, pids))
+        if whoami().strip() != "root":
+            LOGGER.error("Requires root privileges to run locally")
+            sys.exit(1)
+        cmd = "bash -c \"%s\"" % (cmd % (pids, pids))
     elif args.ip != '':
         ssh = (
             "ssh %s@%s"

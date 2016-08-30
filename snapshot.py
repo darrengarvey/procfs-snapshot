@@ -1,4 +1,5 @@
 from subprocess import Popen, PIPE
+import sys
 import time
 from parsers.tail import read_tailed_files
 from db import Database
@@ -31,7 +32,6 @@ def parse_args():
     if args.count > 1 and 0 == args.period:
         print ('Error: You must set the period if count > 1\n')
         parser.print_help()
-        import sys
         sys.exit(1)
 
     return args
@@ -72,10 +72,12 @@ def read_stats(args):
     if args.ip == '':
         LOGGER.info('Loading local procfs files')
         cmd = "sudo bash -c \"%s\"" % (cmd % (pids, pids))
-        stream = Popen(cmd, shell=True, bufsize=-1, stdout=PIPE).stdout
     elif args.ip != '':
         ssh = (
             "ssh %s@%s"
+            " -o UserKnownHostsFile=/dev/null"
+            " -o StrictHostKeyChecking=no"
+            " -o LogLevel=error"
             % (args.user, args.ip)
         )
         if args.password:
@@ -84,10 +86,15 @@ def read_stats(args):
             ssh = "%s -o PasswordAuthentication=no" % ssh
 
         cmd = """%s "nice %s" """ % (ssh, cmd % (pids, pids))
-        stream = Popen(cmd, shell=True, bufsize=-1, stdout=PIPE).stdout
 
     LOGGER.info('Reading procfs with cmd: %s' % cmd)
-    return read_tailed_files(stream)
+    p = Popen(cmd, shell=True, bufsize=-1, stdout=PIPE, stderr=PIPE)
+    stats = read_tailed_files(p.stdout)
+    if p.poll() != 0:
+        LOGGER.error("Command failed with: %r" % p.stderr.read().strip())
+        sys.exit(1)
+
+    return stats
 
 
 def main(args):

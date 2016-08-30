@@ -9,6 +9,8 @@ def parse_args():
     parser = ArgumentParser(description='Snapshot statistics from a machine')
     parser.add_argument('--ip', default='',
                         help='connect to a remote host (recommended)')
+    parser.add_argument('--password',
+                        help='the password for the remote user given with --user')
     # Multiple pids could be set using bash expansion: {1234,2345}
     parser.add_argument('-p', '--pid', default='*',
                         help='the pid(s) to look up (default: *)')
@@ -72,7 +74,16 @@ def read_stats(args):
         cmd = "sudo bash -c \"%s\"" % (cmd % (pids, pids))
         stream = Popen(cmd, shell=True, bufsize=-1, stdout=PIPE).stdout
     elif args.ip != '':
-        cmd = """ssh %s@%s "nice %s" """ % (args.user, args.ip, cmd % (pids, pids))
+        ssh = (
+            "ssh %s@%s"
+            % (args.user, args.ip)
+        )
+        if args.password:
+            ssh = "sshpass -p %s %s" % (args.password, ssh)
+        else:
+            ssh = "%s -o PasswordAuthentication=no" % ssh
+
+        cmd = """%s "nice %s" """ % (ssh, cmd % (pids, pids))
         stream = Popen(cmd, shell=True, bufsize=-1, stdout=PIPE).stdout
 
     LOGGER.info('Reading procfs with cmd: %s' % cmd)

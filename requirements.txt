@@ -1,2 +1,5 @@
+# Dependencies needed for the main snapshot script
+sh
+
 # Dependencies only required for running the webserver script.
 twisted

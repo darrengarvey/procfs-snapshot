@@ -9,7 +9,7 @@ from util import LOGGER
 def parse_args():
     from argparse import ArgumentParser
     parser = ArgumentParser(description='Snapshot statistics from a machine')
-    parser.add_argument('--ip', default='',
+    parser.add_argument('--host', default='',
                         help='connect to a remote host (recommended)')
     parser.add_argument('--password',
                         help='the password for the remote user given with --user')
@@ -70,19 +70,19 @@ def read_stats(args):
     else:
         pids = '{%s}' % args.pid.replace(' ', ',')
 
-    if args.ip == '':
+    if args.host == '':
         LOGGER.info('Loading local procfs files')
         if whoami().strip() != "root":
             LOGGER.error("Requires root privileges to run locally")
             sys.exit(1)
         cmd = "bash -c \"%s\"" % (cmd % (pids, pids))
-    elif args.ip != '':
+    elif args.host != '':
         ssh = (
             "ssh %s@%s"
             " -o UserKnownHostsFile=/dev/null"
             " -o StrictHostKeyChecking=no"
             " -o LogLevel=error"
-            % (args.user, args.ip)
+            % (args.user, args.host)
         )
         if args.password:
             ssh = "sshpass -p %s %s" % (args.password, ssh)
@@ -121,7 +121,7 @@ def main(args):
                     len(processes), len(memory_stats)))
         LOGGER.info('Regions: %s' % memory_stats)
 
-        db.add(args.ip if len(args.ip) else '[local]', system_stats, memory_stats, processes)
+        db.add(args.host if len(args.host) else '[local]', system_stats, memory_stats, processes)
 
 if __name__ == '__main__':
     main(parse_args())

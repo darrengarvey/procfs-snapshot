@@ -84,7 +84,7 @@ create table process
     rw_private          integer,
     rw_private_file     integer,
     -- summed pss of readable and executable shared pages
-    rx_shared          integer,
+    rx_shared           integer,
     rx_shared_file      integer,
     -- summed pss of readable and executable private pages
     rx_private          integer,

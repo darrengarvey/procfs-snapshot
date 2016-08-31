@@ -149,7 +149,6 @@ class Database(object):
         if commit:
             self.conn.commit()
 
-
     def _add_processes(self, snapshot_id, processes, commit=False):
         sql = self._get_sql('insert_process.sql')
         for process in processes:
@@ -198,9 +197,31 @@ class Database(object):
                 'referenced': process.referenced,
                 'anonymous': process.anonymous
             })
+
+            self._add_threads(snapshot_id, process.pid,
+                              process.threads.values(),
+                              commit=commit)
+
         if commit:
             self.conn.commit()
 
+    def _add_threads(self, snapshot_id, pid, threads, commit=False):
+        sql = self._get_sql('insert_thread.sql')
+        for thread in threads:
+            self.conn.execute(sql, {
+                'snapshot_id': snapshot_id,
+                'process_id': pid,
+                'thread_id': thread.thread_id,
+                'comm': thread.comm,
+                'minor_faults': thread.minor_faults,
+                'major_faults': thread.major_faults,
+                'user_time': thread.user_time,
+                'system_time': thread.system_time,
+                'start_time': thread.start_time,
+            })
+
+        if commit:
+            self.conn.commit()
 
     def _account_library(self, snapshot_id, inode, name, pss):
         """There are likely to be lots of duplicated library names

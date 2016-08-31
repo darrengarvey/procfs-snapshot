@@ -8,6 +8,7 @@ from parsers.tail import read_tailed_files
 from db import Database
 from util import LOGGER
 
+
 def parse_args():
     from argparse import ArgumentParser
     parser = ArgumentParser(description='Snapshot statistics from a machine')
@@ -52,11 +53,10 @@ def read_stats(args):
               '/proc/loadavg '\
               '/proc/uptime '\
               '/proc/vmstat '\
-          '2>/dev/null &&' \
-          'tail -v -n +1 '\
-              '/proc/%s/stat '\
-          '2>/dev/null | '\
-          'awk \''\
+          '2>/dev/null && ' \
+          'find /proc/%s -type f -name stat '\
+            '-exec tail -v -n +1 {} \; 2>/dev/null | '\
+            'awk \''\
               '/==>/ {print} '\
               '/^[0-9]/ {print \$2, \$10, \$12, \$14, \$15, \$22}\';'
 

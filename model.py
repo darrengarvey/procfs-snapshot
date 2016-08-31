@@ -153,6 +153,19 @@ class Library(object):
         self.shared_count = 0
 
 
+class Thread(object):
+    def __init__(self, thread_id):
+        self.process_id = 0
+        self.thread_id = thread_id
+        # For documentation of these see parsers/stat.py
+        self.comm = ''
+        self.minor_faults = 0
+        self.major_faults = 0
+        self.user_time = 0
+        self.system_time = 0
+        self.start_time = 0
+
+
 # Private helper functions
 def _is_stack(mem):
     # stack space can show up as [stack] or [stack:1234]
@@ -173,6 +186,7 @@ class Process(object):
         self.argv = argv
         # Memory maps in the process' address space.
         self.maps = []
+        self.threads = {}
         # For documentation of these see parsers/stat.py
         self.comm = ''
         self.minor_faults = 0
@@ -180,6 +194,14 @@ class Process(object):
         self.user_time = 0
         self.system_time = 0
         self.start_time = 0
+
+    def get_thread(self, thread_id):
+        try:
+            return self.threads[thread_id]
+        except KeyError:
+            thread = Thread(thread_id)
+            self.threads[thread_id] = thread
+            return thread
 
     @property
     def name(self):

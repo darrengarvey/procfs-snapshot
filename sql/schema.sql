@@ -124,6 +124,25 @@ create table process
 create index process_snap_id_idx on process(snapshot_id);
 create index process_cmd_idx on process(cmd);
 
+create table thread
+(
+    snapshot_id         integer,
+    process_id          integer,
+    thread_id           integer,
+    -- the name of the thread (eg. using prctl)
+    comm                string,
+    minor_faults        integer,
+    major_faults        integer,
+    user_time           integer,
+    system_time         integer,
+    start_time          integer,
+
+    primary key(snapshot_id, process_id, thread_id)
+    foreign key(snapshot_id) references snapshot(id) on delete cascade on update cascade
+);
+
+create index thread_snap_id_idx on thread(snapshot_id);
+
 create table memory_region
 (
     snapshot_id         integer,

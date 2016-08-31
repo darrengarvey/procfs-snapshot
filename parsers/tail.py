@@ -23,7 +23,7 @@ def _save_smaps_region(output, output2, pid, data):
         pass
 
 
-def _parse_section(section_name, current_process, maps, stats, data):
+def _parse_section(section_name, current_process, current_thread, maps, stats, data):
     if section_name == 'meminfo':
         parse_meminfo(maps, data.split('\n'))
     elif section_name == 'loadavg':
@@ -32,6 +32,8 @@ def _parse_section(section_name, current_process, maps, stats, data):
         parse_uptime(stats, data)
     elif section_name == 'vmstat':
         parse_vmstat(stats, data)
+    elif current_thread and section_name == 'stat':
+        parse_stat(current_thread, data)
     elif current_process and section_name != '':
         # Hit a new file, consolidate what we have so far.
         if 'smaps' == section_name:
@@ -52,6 +54,7 @@ def read_tailed_files(stream):
     processes = ProcessList()
     maps = MemoryStats()
     current_process = None
+    current_thread = None
     stats = SystemStats()
 
     for line in stream:
@@ -64,9 +67,11 @@ def read_tailed_files(stream):
         #
         # between files
         elif line.startswith('==>'):
-            _parse_section(section_name, current_process, maps, stats, data)
+            _parse_section(section_name, current_process, current_thread, maps, stats, data)
             data = ''
             section_name = ''
+            current_process = None
+            current_thread = None
 
             if '/proc/loadavg' in line:
                 section_name = 'loadavg'
@@ -90,8 +95,15 @@ def read_tailed_files(stream):
                 elif '/proc/meminfo' in line:
                     section_name = 'meminfo'
                 else:
-                    # There's probably been an error in the little state machine.
-                    LOGGER.error('Error parsing tail line: %s' % line)
+                    match = re.match(r'==> /proc/([0-9]+)/task/([0-9]+)/stat <==', line)
+                    if match is None:
+                        # There's probably been an error in the little state machine.
+                        LOGGER.error('Error parsing tail line: %s' % line)
+                    else:
+                        section_name = 'stat'
+                        pid=int(match.group(1)) # process id
+                        tid=int(match.group(2)) # thread id
+                        current_thread = processes.get(pid).get_thread(tid)
             else:
                 section_name = match.group(2)
                 current_process = processes.get(pid=int(match.group(1)))
@@ -106,6 +118,6 @@ def read_tailed_files(stream):
             LOGGER.debug('Skipping line: %s' % line)
 
     # We've hit the end, parse the section we were in.
-    _parse_section(section_name, current_process, maps, stats, data)
+    _parse_section(section_name, current_process, current_thread, maps, stats, data)
 
     return stats, processes, maps

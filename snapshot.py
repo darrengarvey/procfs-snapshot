@@ -72,11 +72,15 @@ def read_stats(args):
     else:
         pids = '{%s}' % args.pid.replace(' ', ',')
 
+    # root can see all of /proc, another user is likely not going to be able
+    # to read all of it. This isn't a hard error, but won't give a full view
+    # of the system.
+    if (args.host == '' and whoami().strip() != "root") or\
+       (args.host != '' and args.user != 'root'):
+        LOGGER.warning("If not running as root you may not see all info.")
+
     if args.host == '':
         LOGGER.info('Loading local procfs files')
-        if whoami().strip() != "root":
-            LOGGER.error("Requires root privileges to run locally")
-            sys.exit(1)
         cmd = "bash -c \"%s\"" % (cmd % (pids, pids))
     elif args.host != '':
         ssh = (

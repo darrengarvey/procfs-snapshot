@@ -42,11 +42,11 @@ def parse_args():
 
 
 def read_stats(args):
-    # This is the command to grap all of the necessary info.
+    # This is the command to grab all of the necessary info.
     # Note that -v is passed to tail - this is so we always the filename
     # given to us, which is needed for parsing.
     # As processes can be transient, we can get errors here about
-    # non-existant files, so ignore them, this is expectedself.
+    # non-existent files, so ignore them, this is expected.
     cmd = 'nice tail -v -n +1 '\
               '/proc/%s/{cmdline,smaps} '\
               '/proc/meminfo '\

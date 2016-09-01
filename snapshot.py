@@ -47,14 +47,14 @@ def read_stats(args):
     # given to us, which is needed for parsing.
     # As processes can be transient, we can get errors here about
     # non-existant files, so ignore them, this is expectedself.
-    cmd = 'tail -v -n +1 '\
+    cmd = 'nice tail -v -n +1 '\
               '/proc/%s/{cmdline,smaps} '\
               '/proc/meminfo '\
               '/proc/loadavg '\
               '/proc/uptime '\
               '/proc/vmstat '\
-          '2>/dev/null && ' \
-          'find /proc/%s -type f -name stat '\
+          '2>/dev/null; ' \
+          'nice find /proc/%s -type f -name stat '\
             '-exec tail -v -n +1 {} \; 2>/dev/null | '\
             'awk \''\
               '/==>/ {print} '\
@@ -91,7 +91,7 @@ def read_stats(args):
         else:
             ssh = "%s -o PasswordAuthentication=no" % ssh
 
-        cmd = """%s "nice %s" """ % (ssh, cmd % (pids, pids))
+        cmd = """%s "%s" """ % (ssh, cmd % (pids, pids))
 
     LOGGER.info('Reading procfs with cmd: %s' % cmd)
     p = Popen(cmd, shell=True, bufsize=-1, stdout=PIPE, stderr=PIPE)

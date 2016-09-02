@@ -1,4 +1,3 @@
-==> /proc/meminfo <==
 MemTotal:       20507388 kB
 MemFree:         8326068 kB
 MemAvailable:   12679932 kB
@@ -37,10 +36,10 @@ HardwareCorrupted:     0 kB
 AnonHugePages:   2355200 kB
 CmaTotal:              0 kB
 CmaFree:               0 kB
-HugePages_Total:       0
-HugePages_Free:        0
-HugePages_Rsvd:        0
-HugePages_Surp:        0
+HugePages_Total:       1
+HugePages_Free:        2
+HugePages_Rsvd:        3
+HugePages_Surp:        4
 Hugepagesize:       2048 kB
 DirectMap4k:      358656 kB
 DirectMap2M:    20559872 kB

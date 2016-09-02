@@ -25,7 +25,7 @@ def _save_smaps_region(output, output2, pid, data):
 
 def _parse_section(section_name, current_process, current_thread, maps, stats, data):
     if section_name == 'meminfo':
-        parse_meminfo(maps, data.split('\n'))
+        parse_meminfo(maps, data)
     elif section_name == 'loadavg':
         parse_loadavg(stats, data)
     elif section_name == 'uptime':

@@ -9,6 +9,7 @@ class SystemStats(object):
         self.total_threads = 0
         self.last_pid = 0
         self.vmstats = {}
+        self.meminfo = {}
 
 class SmapsPermissions(object):
     def __init__(self):

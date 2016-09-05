@@ -13,7 +13,6 @@ class TimelineElement(Element):
     chart_options = {
         'width': 1600,
         'height': 350,
-        'curveType': 'function',
         'enableInteractivity': True,
         # These two options exist according to the Google Chart docs, but they
         # seem to cause the chart to render incorrectly on Chrome.

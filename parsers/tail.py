@@ -89,16 +89,17 @@ def read_tailed_files(stream):
             # Now parse the new line.
             match = re.match(r'==> /proc/([0-9]+)/([\w]+) <==', line)
             if match is None:
-                if '/proc/self/' in line or '/proc/thread-self/' in line:
-                    # We just ignore these entries.
+                if any(x in line for x in ['/proc/stat', '/proc/self/', '/proc/thread-self/']):
+                    # We just ignore these entries, interetesting as they are,
+                    # for now.
                     pass
                 elif '/proc/meminfo' in line:
                     section_name = 'meminfo'
                 else:
                     match = re.match(r'==> /proc/([0-9]+)/task/([0-9]+)/stat <==', line)
                     if match is None:
-                        # There's probably been an error in the little state machine.
-                        LOGGER.error('Error parsing tail line: %s' % line)
+                        # The line might not be parsed here. There are a few
+                        LOGGER.warn('Unrecognised line, skipping: %s' % line)
                     else:
                         section_name = 'stat'
                         pid=int(match.group(1)) # process id

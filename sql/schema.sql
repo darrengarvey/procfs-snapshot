@@ -44,7 +44,7 @@ create table library
     num_fragments   integer,
     shared_count    integer,
 
-    primary key (snapshot_id, inode)
+    primary key (snapshot_id, inode),
     foreign key(snapshot_id) references snapshot(id) on delete cascade on update cascade
 );
 
@@ -117,7 +117,7 @@ create table process
     referenced          integer,
     anonymous           integer,
 
-    primary key(snapshot_id, pid)
+    primary key(snapshot_id, pid),
     foreign key(snapshot_id) references snapshot(id) on delete cascade on update cascade
 );
 
@@ -137,7 +137,7 @@ create table thread
     system_time         integer,
     start_time          integer,
 
-    primary key(snapshot_id, process_id, thread_id)
+    primary key(snapshot_id, process_id, thread_id),
     foreign key(snapshot_id) references snapshot(id) on delete cascade on update cascade
 );
 
@@ -177,7 +177,7 @@ create table memory_region
     locked              integer,
     vm_flags            string,
 
-    primary key(snapshot_id, pid, start_addr)
+    primary key(snapshot_id, pid, start_addr),
     foreign key(snapshot_id, pid) references process(snapshot_id, pid) on delete cascade on update cascade
 );
 

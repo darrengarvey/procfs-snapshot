@@ -1,6 +1,6 @@
 import re
 from util import LOGGER
-from model import SystemStats
+from model import MemoryStats
 
 # Decent documentation of /proc/meminfo:
 # https://www.centos.org/docs/5/html/5.2/Deployment_Guide/s2-proc-meminfo.html
@@ -9,8 +9,8 @@ from model import SystemStats
 # An example is in test/meminfo.tail
 
 def parse_meminfo(stats, data):
-    if not isinstance(stats, SystemStats):
-        raise TypeError('%s is not of type SystemStats' % type(stats))
+    if not isinstance(stats, MemoryStats):
+        raise TypeError('%s is not of type MemoryStats' % type(stats))
 
     for line in data.split('\n'):
         parts = re.split('[ :]+', line.strip())

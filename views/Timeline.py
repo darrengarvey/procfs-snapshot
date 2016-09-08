@@ -80,14 +80,14 @@ class TimelineView(resource.Resource):
         # Now add the top-level PSS values for the processes to the table.
         for row in self.db.get_process_stats(name=self.process_name_filter):
             timestamp = row[0]
-            if timestamp == data[-1][0]:
-                # Got another process in the same snapshot
-                pos = 1 + processes.index(row[2])
-                data[-1][pos] = int(row[4])
-            else:
+            if timestamp != data[-1][0]:
                 # Moved onto a new snapshot
                 data.append([0] * (len(processes) + 1))
                 data[-1][0] = timestamp
+
+            # Add process for this snapshot
+            pos = 1 + processes.index(row[2])
+            data[-1][pos] = int(row[4])
 
         flattenString(
                 None,

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from subprocess import Popen, PIPE
-from sh import whoami
+import getpass
 import sys
 import time
 from parsers.tail import read_tailed_files
@@ -75,7 +75,7 @@ def read_stats(args):
     # root can see all of /proc, another user is likely not going to be able
     # to read all of it. This isn't a hard error, but won't give a full view
     # of the system.
-    if (args.host == '' and whoami().strip() != "root") or\
+    if (args.host == '' and getpass.getuser() != "root") or\
        (args.host != '' and args.user != 'root'):
         LOGGER.warning("If not running as root you may not see all info.")
 

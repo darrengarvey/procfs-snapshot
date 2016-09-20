@@ -16,6 +16,8 @@ def parse_args():
                         help='connect to a remote host (recommended)')
     parser.add_argument('--password',
                         help='the password for the remote user given with --user')
+    parser.add_argument('-P', '--ssh-port', type=int,
+                        help='the port to connect to for SSH')
     # Multiple pids could be set using bash expansion: {1234,2345}
     parser.add_argument('-p', '--pid', default='*',
                         help='the pid(s) to look up (default: *)')
@@ -79,16 +81,20 @@ def read_stats(args):
        (args.host != '' and args.user != 'root'):
         LOGGER.warning("If not running as root you may not see all info.")
 
+    optional_port = ''
+    if args.ssh_port != '':
+        optional_port = '-p %d' % args.ssh_port
+
     if args.host == '':
         LOGGER.info('Loading local procfs files')
         cmd = "bash -c \"%s\"" % (cmd % (pids, pids))
     elif args.host != '':
         ssh = (
-            "ssh %s@%s"
+            "ssh %s %s@%s"
             " -o UserKnownHostsFile=/dev/null"
             " -o StrictHostKeyChecking=no"
             " -o LogLevel=error"
-            % (args.user, args.host)
+            % (optional_port, args.user, args.host)
         )
         if args.password:
             ssh = "sshpass -p %s %s" % (args.password, ssh)

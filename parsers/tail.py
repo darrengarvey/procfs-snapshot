@@ -114,7 +114,7 @@ def read_tailed_files(stream):
             _save_smaps_region(current_process.maps, maps, current_process.pid, data)
             data = line
         elif section_name != '':
-            data += line
+            data += "\n" + line
         else:
             LOGGER.debug('Skipping line: %s' % line)
 

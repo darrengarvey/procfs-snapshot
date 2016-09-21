@@ -82,7 +82,7 @@ def read_stats(args):
         LOGGER.warning("If not running as root you may not see all info.")
 
     optional_port = ''
-    if args.ssh_port != '':
+    if args.ssh_port:
         optional_port = '-p %d' % args.ssh_port
 
     if args.host == '':

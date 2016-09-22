@@ -83,9 +83,14 @@ class SnapshotView(resource.Resource):
         elif 'snapshot_date' in request.args:
             snapshot = self.db.get_snapshot_id(request.args['snapshot_date'][0])
 
+        units = 1024 * 1024 # Units in MB
+
+        total_memory = self.db.get_total_memory(snapshot_id=snapshot,
+                                                name=self.process_name_filter)
+        machine_name = 'machine (%0.2fMB)' % (total_memory / units)
         data = [
-            ['Process', 'Parent', 'Size (Kb)'],
-            ['machine', None, 0],
+            ['Process', 'Parent', 'Size (KB)'],
+            [machine_name, None, 0],
         ]
         processes = []
         fields = [
@@ -110,20 +115,19 @@ class SnapshotView(resource.Resource):
         ]
 
         extra_data = []
-        units = 1024 * 1024 # Units in MB
         for row in self.db.get_process_info(snapshot_id=snapshot,
                                             name=self.process_name_filter):
             # Unfortunately we need to make every entry unique, so add
             # the pid into the description of the entries.
             pid = int(row[0])
-            process = '%s (%0.2fMb, frags:%d, pid:%d)' % \
+            process = '%s (%0.2fMB, frags:%d, pid:%d)' % \
                       (row[1].split('/')[-1], # process name
                        float(row[2]) / units, # pss in MB
                        int(row[3]),           # number of memory fragments
                        pid)
-            data.append([str(process), 'machine', 0])
+            data.append([str(process), machine_name, 0])
             for i, field in enumerate(row[4:]):
-                extra_data.append(['%s (%0.2fMb, pid:%d)' % \
+                extra_data.append(['%s (%0.2fMB, pid:%d)' % \
                                    (fields[i], float(field) / units, pid),
                                    process,
                                    int(field)])

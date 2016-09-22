@@ -39,6 +39,12 @@ class Database(object):
         for process in self.conn.execute(sql, { 'name': name }):
             yield process
 
+    def get_total_memory(self, snapshot_id, name='%'):
+        sql = self._get_sql('select_total_memory.sql')
+        return float(self.conn.execute(sql, {
+                       'snapshot_id': snapshot_id,
+                       'name': name }).fetchone()[0])
+
     def get_process_info(self, snapshot_id, name='%'):
         sql = self._get_sql('select_process_info.sql')
         for process in self.conn.execute(sql, {
@@ -267,7 +273,6 @@ class Database(object):
     def _add_memory_stats(self, snapshot_id, memory_stats, commit=False):
         sql = self._get_sql('insert_memory_stats.sql')
         for region in memory_stats.maps:
-            #print('region', region.name, region.pid, region.start_addr, region.end_addr)
             self._account_library(snapshot_id,
                                   region.inode,
                                   region.name,

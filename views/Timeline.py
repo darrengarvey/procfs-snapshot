@@ -8,6 +8,7 @@ from twisted.python.filepath import FilePath
 from db import Database
 from util import LOGGER
 
+
 class TimelineElement(Element):
     # These are the options used when showing the chart.
     chart_options = {
@@ -24,14 +25,16 @@ class TimelineElement(Element):
         # 'explorer': {},
         # 'focusTarget': 'category',
         'chartArea': { 'width': '60%', 'height': '70%' },
-        'title': "PSS Timeline",
         'maxDepth': 1,
         'useWeightedAverageForAggregation': True,
     }
-    def __init__(self, template, data):
+    title_template = "%s Timeline"
+
+    def __init__(self, template, data, measure):
         Element.__init__(self)
         self.loader = XMLFile(FilePath(template))
         self.chart_data = data
+        self.chart_options['title'] = self.title_template % measure
 
     @renderer
     def options(self, request, tag):
@@ -41,19 +44,22 @@ class TimelineElement(Element):
     def data(self, request, tag):
         return json.dumps(self.chart_data)
 
- 
+
 class TimelineView(resource.Resource):
     isLeaf = False
     output = ''
+    measure_index = {'PSS': 4, 'RSS': 5}
 
-    def __init__(self, db, process_name_filter):
+    def __init__(self, db, process_name_filter, measure):
         resource.Resource.__init__(self)
         self.db = db
         self.process_name_filter = process_name_filter
+        self.measure = measure
+        self.index = self.measure_index[measure]
 
     def renderOutput(self, output):
         self.output = output
- 
+
     def getChild(self, name, request):
         LOGGER.info('Rendering child of TimelineView: %s' % name)
         if name == '':
@@ -77,7 +83,7 @@ class TimelineView(resource.Resource):
 
         LOGGER.debug('got process data: %s' % data)
 
-        # Now add the top-level PSS values for the processes to the table.
+        # Now add the top-level memory values for the processes to the table.
         for row in self.db.get_process_stats(name=self.process_name_filter):
             timestamp = row[0]
             if timestamp != data[-1][0]:
@@ -87,11 +93,11 @@ class TimelineView(resource.Resource):
 
             # Add process for this snapshot
             pos = 1 + processes.index(row[2])
-            data[-1][pos] = int(row[4])
+            data[-1][pos] = int(row[self.index])
 
         flattenString(
-                None,
-                TimelineElement('static/timeline.html', data)
-            ).addCallback(self.renderOutput)
+            None,
+            TimelineElement('static/timeline.html', data, self.measure)
+        ).addCallback(self.renderOutput)
         request.write(self.output)
         return ""

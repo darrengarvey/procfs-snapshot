@@ -48,7 +48,7 @@ class TimelineElement(Element):
 class TimelineView(resource.Resource):
     isLeaf = False
     output = ''
-    measure_index = {'PSS': 4, 'RSS': 5}
+    measure_index = {'PSS': 4, 'RSS': 5, 'USS': 6}
 
     def __init__(self, db, process_name_filter, measure):
         resource.Resource.__init__(self)

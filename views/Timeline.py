@@ -18,7 +18,7 @@ class DropdownMenu(Element):
     @renderer
     def listItems(self, request, tag):
         for option in self.optionsList:
-            yield tag.clone().fillSlots(optionName=option)
+            yield tag.clone().fillSlots(optionName=option.upper(), pageName='?measure=%s' % option)
 
 
 class TimelineElement(Element):
@@ -40,13 +40,13 @@ class TimelineElement(Element):
         'maxDepth': 1,
         'useWeightedAverageForAggregation': True,
     }
-    title_template = "%s Timeline"
+    title_template = '%s Timeline'
 
     def __init__(self, template, data, measure):
         Element.__init__(self)
         self.loader = XMLFile(FilePath(template))
         self.chart_data = data
-        self.chart_options['title'] = self.title_template % measure
+        self.chart_options['title'] = self.title_template % measure.upper()
 
     @renderer
     def options(self, request, tag):
@@ -60,14 +60,14 @@ class TimelineElement(Element):
 class TimelineView(resource.Resource):
     isLeaf = False
     output = ''
-    measure_index = {'PSS': 4, 'RSS': 5, 'USS': 6}
+    measure_index = {'pss': 4, 'rss': 5, 'uss': 6}
 
     def __init__(self, db, process_name_filter, measure):
         resource.Resource.__init__(self)
         self.db = db
         self.process_name_filter = process_name_filter
-        self.measure = measure
-        self.index = self.measure_index[measure]
+        self.measure = measure.lower()
+        self.index = self.measure_index[self.measure]
 
     def renderOutput(self, output):
         self.output += output
@@ -109,7 +109,9 @@ class TimelineView(resource.Resource):
 
         flattenString(
             None,
-            DropdownMenu('static/dropdown.html', "Memory Measure", ["RSS", "PSS", "USS"])
+            DropdownMenu('static/dropdown.html',
+                         'Memory Measure',
+                         self.measure_index.keys())
         ).addCallback(self.renderOutput)
         flattenString(
             None,

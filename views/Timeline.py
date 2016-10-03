@@ -1,12 +1,24 @@
 import json
-import os
-import sqlite3
 from twisted.web import resource
-from twisted.web.template import Element, renderer, XMLFile, flattenString, tags
-from twisted.web.error import Error
+from twisted.web.template import Element, renderer, XMLFile, flattenString
 from twisted.python.filepath import FilePath
-from db import Database
 from util import LOGGER
+
+
+class DropdownMenu(Element):
+    def __init__(self, template, title, optionsList):
+        self.title = title
+        self.optionsList = optionsList
+        self.loader = XMLFile(FilePath(template))
+
+    @renderer
+    def listTitle(self, request, tag):
+        return tag(self.title)
+
+    @renderer
+    def listItems(self, request, tag):
+        for option in self.optionsList:
+            yield tag.clone().fillSlots(optionName=option)
 
 
 class TimelineElement(Element):
@@ -58,7 +70,7 @@ class TimelineView(resource.Resource):
         self.index = self.measure_index[measure]
 
     def renderOutput(self, output):
-        self.output = output
+        self.output += output
 
     def getChild(self, name, request):
         LOGGER.info('Rendering child of TimelineView: %s' % name)
@@ -95,6 +107,10 @@ class TimelineView(resource.Resource):
             pos = 1 + processes.index(row[2])
             data[-1][pos] = int(row[self.index])
 
+        flattenString(
+            None,
+            DropdownMenu('static/dropdown.html', "Memory Measure", ["RSS", "PSS", "USS"])
+        ).addCallback(self.renderOutput)
         flattenString(
             None,
             TimelineElement('static/timeline.html', data, self.measure)

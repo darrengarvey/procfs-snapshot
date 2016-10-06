@@ -25,7 +25,8 @@ class RootView(resource.Resource):
     def getChild(self, name, request):
         print "Rendering child %s" % name
         if name == '' or name == "timeline":
-            return TimelineView(self.db, self.process_name_filter)
+            return TimelineView(self.db, self.process_name_filter,
+                                request.args.get('measure', ['PSS'])[0])
         if name == "processes":
             return ProcessesView(self.db)
         elif name == "process":

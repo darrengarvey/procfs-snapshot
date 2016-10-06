@@ -2,8 +2,10 @@
 
 from subprocess import Popen, PIPE
 import getpass
+import os
 import sys
 import time
+import paramiko
 from parsers.tail import read_tailed_files
 from db import Database
 from util import LOGGER
@@ -16,7 +18,11 @@ def parse_args():
                         help='connect to a remote host (recommended)')
     parser.add_argument('--password',
                         help='the password for the remote user given with --user')
-    parser.add_argument('-P', '--ssh-port', type=int,
+    parser.add_argument('--key',
+                        help='path to ssh private key for passwordless login, '
+                        'if neither key nor password are set, will default to '
+                        'using ~/.ssh/id_rsa')
+    parser.add_argument('-P', '--ssh-port', type=int, default=22,
                         help='the port to connect to for SSH')
     # Multiple pids could be set using bash expansion: {1234,2345}
     parser.add_argument('-p', '--pid', default='*',
@@ -77,38 +83,36 @@ def read_stats(args):
     # root can see all of /proc, another user is likely not going to be able
     # to read all of it. This isn't a hard error, but won't give a full view
     # of the system.
-    if (args.host == '' and getpass.getuser() != "root") or\
+    if (args.host == '' and getpass.getuser() != 'root') or\
        (args.host != '' and args.user != 'root'):
-        LOGGER.warning("If not running as root you may not see all info.")
+        LOGGER.warning('If not running as root you may not see all info.')
 
-    optional_port = ''
-    if args.ssh_port:
-        optional_port = '-p %d' % args.ssh_port
-
+    cmd = "bash -c \"%s\"" % (cmd % (pids, pids))
     if args.host == '':
         LOGGER.info('Loading local procfs files')
-        cmd = "bash -c \"%s\"" % (cmd % (pids, pids))
+        p = Popen(cmd, shell=True, bufsize=-1, stdout=PIPE, stderr=PIPE)
+        stdout = p.stdout
+        stderr = p.stderr
     elif args.host != '':
-        ssh = (
-            "ssh %s %s@%s"
-            " -o UserKnownHostsFile=/dev/null"
-            " -o StrictHostKeyChecking=no"
-            " -o LogLevel=error"
-            % (optional_port, args.user, args.host)
-        )
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         if args.password:
-            ssh = "sshpass -p %s %s" % (args.password, ssh)
+            ssh.connect(args.host, port=args.ssh_port, username=args.user, password=args.password)
         else:
-            ssh = "%s -o PasswordAuthentication=no" % ssh
+            if not args.key:
+                args.key = os.path.expanduser('~/.ssh/id_rsa')
+            mykey = paramiko.RSAKey.from_private_key_file(args.key)
+            ssh.connect(args.host, username=args.user, pkey=mykey)
 
-        cmd = """%s "%s" """ % (ssh, cmd % (pids, pids))
+        _, stdout, stderr = ssh.exec_command(cmd)
+
+    if (args.host == '' and p.poll() != 0) or\
+        (args.host != '' and stderr.channel.exit_status_ready() and stderr.channel.recv_exit_status != 0):
+        LOGGER.error('Command failed with: %r' % stderr.read().strip())
+        sys.exit(1)
 
     LOGGER.info('Reading procfs with cmd: %s' % cmd)
-    p = Popen(cmd, shell=True, bufsize=-1, stdout=PIPE, stderr=PIPE)
-    stats = read_tailed_files(p.stdout)
-    if p.poll() != 0:
-        LOGGER.error("Command failed with: %r" % p.stderr.read().strip())
-        sys.exit(1)
+    stats = read_tailed_files(stdout)
 
     return stats
 
@@ -119,6 +123,8 @@ def main(args):
         LOGGER.setLevel(logging.DEBUG)
     else:
         LOGGER.setLevel(logging.INFO)
+
+    paramiko.util.logging.getLogger().setLevel(logging.ERROR)
 
     # Get the database handle
     db = Database(args.db, args.overwrite)

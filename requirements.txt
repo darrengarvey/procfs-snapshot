@@ -1,5 +1,5 @@
 # Dependencies needed for the main snapshot script
-# There are none
+paramiko
 
 # Dependencies only required for running the webserver script.
 twisted

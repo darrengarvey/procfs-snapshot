@@ -295,7 +295,7 @@ class Database(object):
                 'private_dirty': region.private_dirty,
                 'referenced': region.referenced,
                 'anonymous': region.anonymous,
-                'anonymous_huge': region.anonymous_huge,
+                'anon_huge_pages': region.anon_huge_pages,
                 'shared_hugetlb': region.shared_hugetlb,
                 'private_hugetlb': region.private_hugetlb,
                 'swap': region.swap,

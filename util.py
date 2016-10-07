@@ -1,8 +1,8 @@
 import logging
+import re
 
 logging.basicConfig(format='%(asctime)-15s %(levelname)s %(filename)s:%(lineno)d %(message)s')
 LOGGER = logging.getLogger('stats-snapshot')
-
 
 
 def find_all_subclasses(classType):
@@ -16,3 +16,11 @@ def find_all_subclasses(classType):
                 subclasses[name] = child
                 stack.append(child)
     return subclasses
+
+
+first_cap_re = re.compile('(.)([A-Z][a-z]+)')
+all_cap_re = re.compile('([a-z0-9])([A-Z])')
+def camel_case_to_underscore(name):
+    s1 = first_cap_re.sub(r'\1_\2', name)
+    s2 = all_cap_re.sub(r'\1_\2', s1).lower()
+    return re.sub(r'(_)\1+', r'\1', s2)

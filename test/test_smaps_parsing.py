@@ -121,7 +121,7 @@ VmFlags: rd mr mw me sd"""
         self.assertEqual(152 * 1024, info.referenced)
 
         self.assertEqual(  2 * 1024, info.anonymous)
-        self.assertEqual(  3 * 1024, info.anonymous_huge)
+        self.assertEqual(  3 * 1024, info.anon_huge_pages)
 
         self.assertEqual(  4 * 1024, info.shared_hugetlb)
         self.assertEqual(  5 * 1024, info.private_hugetlb)

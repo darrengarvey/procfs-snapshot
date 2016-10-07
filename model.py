@@ -35,7 +35,7 @@ class MemoryRegion(object):
         self.private_dirty = 0
         self.referenced = 0
         self.anonymous = 0
-        self.anonymous_huge = 0
+        self.anon_huge_pages = 0
         self.shared_hugetlb = 0
         self.private_hugetlb = 0
         self.swap = 0

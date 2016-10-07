@@ -1,6 +1,6 @@
 import re
 from smaps import parse_smaps_memory_region, is_memory_region_header
-from uptime import parse_uptime
+
 from stat import parse_stat
 from vmstat import parse_vmstat
 from model import SystemStats, Process, ProcessList, MemoryStats
@@ -31,9 +31,7 @@ def _parse_section(section_name, current_process, current_thread, data, out):
     except:
         pass
 
-    if section_name == 'uptime':
-        parse_uptime(out['stats'], data)
-    elif section_name == 'vmstat':
+    if section_name == 'vmstat':
         parse_vmstat(out['stats'], data)
     elif current_thread and section_name == 'stat':
         parse_stat(current_thread, data)

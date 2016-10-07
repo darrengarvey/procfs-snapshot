@@ -2,6 +2,7 @@
 import parser
 import loadavg
 import meminfo
+import uptime
 
 import util
 

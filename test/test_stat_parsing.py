@@ -23,7 +23,7 @@ class StatParserTest(unittest.TestCase):
 
     def test_stat_parsing(self):
         parser = parsers.get_parser('stat')
-        res = parser.parse(self.example, dict())['proc_stat']
+        res = parser.parse(self.example, dict())['stat']
         self.assertEqual(res['comm'], 'tracker-miner-f', 'comm not as expected? {0}'.format(res['comm']))
         self.assertEqual(res, self.expected, 'Did not parse /proc/stat correctly?')
 

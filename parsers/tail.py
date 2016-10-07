@@ -41,7 +41,7 @@ def _parse_section(section_name, current_process, current_thread, data, out):
         pass
 
     if current_thread and section_name == 'stat':
-        _save_stat(current_thread, out['proc_stat'])
+        _save_stat(current_thread, out['stat'])
     elif current_process and section_name != '':
         # Hit a new file, consolidate what we have so far.
         if 'smaps' == section_name:
@@ -51,7 +51,7 @@ def _parse_section(section_name, current_process, current_thread, data, out):
             # that because it's not interesting here.
             current_process.argv = filter(len, data.strip().split('\0'))
         elif 'stat' == section_name:
-            _save_stat(current_process, out['proc_stat'])
+            _save_stat(current_process, out['stat'])
         else:
             LOGGER.error('Unrecognised section name: %s' % section_name)
 

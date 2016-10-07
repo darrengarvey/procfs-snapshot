@@ -82,8 +82,8 @@ def convert(formatter, value):
 
 class Parser_stat(parser.Parser):
     def parse(self, data, out):
-        if not out.has_key('proc_stat'):
-            out['proc_stat'] = dict()
+        if not out.has_key('stat'):
+            out['stat'] = dict()
         parts = data.split()
 
         fmts = proc_stat_format
@@ -94,9 +94,9 @@ class Parser_stat(parser.Parser):
             formatter = fmt[1]
             try:
                 value = convert(formatter, parts[i - 1])
-                out['proc_stat'][name] = value
+                out['stat'][name] = value
                 if len(fmt) > 3:
-                    out['proc_stat'][name] = fmt[3].get(value, value)
+                    out['stat'][name] = fmt[3].get(value, value)
             except:
                 pass
         return out

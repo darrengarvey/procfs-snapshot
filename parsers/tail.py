@@ -1,12 +1,13 @@
 import re
 from smaps import parse_smaps_memory_region, is_memory_region_header
 from meminfo import parse_meminfo
-from loadavg import parse_loadavg
 from uptime import parse_uptime
 from stat import parse_stat
 from vmstat import parse_vmstat
 from model import SystemStats, Process, ProcessList, MemoryStats
 from util import LOGGER
+
+import parsers
 
 
 def _save_smaps_region(output, output2, pid, data):
@@ -23,15 +24,20 @@ def _save_smaps_region(output, output2, pid, data):
         pass
 
 
-def _parse_section(section_name, current_process, current_thread, maps, stats, data):
+def _parse_section(section_name, current_process, current_thread, maps, data, out):
+
+    try:
+        parser = parsers.get_parser(section_name)
+        parser.parse(data, out)
+    except:
+        pass
+
     if section_name == 'meminfo':
         parse_meminfo(maps, data)
-    elif section_name == 'loadavg':
-        parse_loadavg(stats, data)
     elif section_name == 'uptime':
-        parse_uptime(stats, data)
+        parse_uptime(out['stats'], data)
     elif section_name == 'vmstat':
-        parse_vmstat(stats, data)
+        parse_vmstat(out['stats'], data)
     elif current_thread and section_name == 'stat':
         parse_stat(current_thread, data)
     elif current_process and section_name != '':
@@ -55,7 +61,8 @@ def read_tailed_files(stream):
     maps = MemoryStats()
     current_process = None
     current_thread = None
-    stats = SystemStats()
+    out = {}
+    out['stats'] = SystemStats()
 
     for line in stream:
         LOGGER.debug('Got line: %s' % line)
@@ -67,7 +74,7 @@ def read_tailed_files(stream):
         #
         # between files
         elif line.startswith('==>'):
-            _parse_section(section_name, current_process, current_thread, maps, stats, data)
+            _parse_section(section_name, current_process, current_thread, maps, data, out)
             data = ''
             section_name = ''
             current_process = None
@@ -119,6 +126,6 @@ def read_tailed_files(stream):
             LOGGER.debug('Skipping line: %s' % line)
 
     # We've hit the end, parse the section we were in.
-    _parse_section(section_name, current_process, current_thread, maps, stats, data)
+    _parse_section(section_name, current_process, current_thread, maps, data, out)
 
-    return stats, processes, maps
+    return out['stats'], processes, maps

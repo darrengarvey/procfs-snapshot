@@ -1,4 +1,4 @@
-from model import SmapsPermissions, MemoryRegion
+from model import MemoryRegion
 import util
 import re
 
@@ -46,26 +46,25 @@ def is_memory_region_header(line):
 
 def parse_smaps_memory_region(pid, lines, has_header=True):
     """Parse a whole smaps region, which may look like:
-
-7f5c8550e000-7f5c85554000 r--p 00000000 08:06 1309629   /fonts/Arial_Bold.ttf
-Size:                280 kB
-Rss:                 152 kB
-Pss:                  86 kB
-Shared_Clean:        132 kB
-Shared_Dirty:         12 kB
-Private_Clean:        20 kB
-Private_Dirty:         1 kB
-Referenced:          152 kB
-Anonymous:             2 kB
-AnonHugePages:         3 kB
-Shared_Hugetlb:        4 kB
-Private_Hugetlb:       5 kB
-Swap:                  6 kB
-SwapPss:               7 kB
-KernelPageSize:        8 kB
-MMUPageSize:           9 kB
-Locked:               10 kB
-VmFlags: rd mr mw me sd"""
+    7f5c8550e000-7f5c85554000 r--p 00000000 08:06 1309629   /fonts/Arial_Bold.ttf
+    Size:                280 kB
+    Rss:                 152 kB
+    Pss:                  86 kB
+    Shared_Clean:        132 kB
+    Shared_Dirty:         12 kB
+    Private_Clean:        20 kB
+    Private_Dirty:         1 kB
+    Referenced:          152 kB
+    Anonymous:             2 kB
+    AnonHugePages:         3 kB
+    Shared_Hugetlb:        4 kB
+    Private_Hugetlb:       5 kB
+    Swap:                  6 kB
+    SwapPss:               7 kB
+    KernelPageSize:        8 kB
+    MMUPageSize:           9 kB
+    Locked:               10 kB
+    VmFlags: rd mr mw me sd"""
 
     has_header = is_memory_region_header(lines[0])
 

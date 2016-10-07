@@ -2,7 +2,6 @@ import re
 from smaps import parse_smaps_memory_region, is_memory_region_header
 
 from stat import parse_stat
-from vmstat import parse_vmstat
 from model import SystemStats, Process, ProcessList, MemoryStats
 from util import LOGGER
 
@@ -31,9 +30,7 @@ def _parse_section(section_name, current_process, current_thread, data, out):
     except:
         pass
 
-    if section_name == 'vmstat':
-        parse_vmstat(out['stats'], data)
-    elif current_thread and section_name == 'stat':
+    if current_thread and section_name == 'stat':
         parse_stat(current_thread, data)
     elif current_process and section_name != '':
         # Hit a new file, consolidate what we have so far.

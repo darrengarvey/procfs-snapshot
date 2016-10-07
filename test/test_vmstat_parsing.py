@@ -1,7 +1,6 @@
 import os
 import unittest
-from model import SystemStats
-from parsers.vmstat import parse_vmstat
+import parsers
 
 class VmStatParserTest(unittest.TestCase):
 
@@ -9,12 +8,9 @@ class VmStatParserTest(unittest.TestCase):
         with open(os.path.join(os.path.dirname(__file__), 'vmstat.tail'), 'rb') as f:
             self.example = f.read()
 
-    def test_correct_type_must_be_passed_into_parse_vmstat(self):
-        self.assertRaises(TypeError, parse_vmstat, None, self.example)
-
     def test_process_vmstat_parsing(self):
-        stats = SystemStats()
-        parse_vmstat(stats, self.example)
+        parser = parsers.get_parser('vmstat')
+        stats = parser.parse(self.example, dict())['stats']
         self.assertEqual(1498, stats.vmstats['nr_free_pages'])
         self.assertEqual(195206, stats.vmstats['pgpgin'])
         self.assertEqual(86876, stats.vmstats['pgpgout'])

@@ -21,6 +21,14 @@ class TailParserTest(unittest.TestCase):
         with open(os.path.join(os.path.dirname(__file__), 'procfs.tail'), 'rb') as f:
             _, processes, _ = read_tailed_files(f)
             self.assertEqual(6, len(processes))
+            p = processes[6261]
+            self.assertEqual(p.comm, 'deja-dup-monitor',
+                             'name did not match? [{0}]'.format(p.comm))
+            self.assertEqual(p.minor_faults, 7149, 'minor_faults did not match')
+            self.assertEqual(p.major_faults, 0, 'major_faults did not match')
+            self.assertEqual(p.user_time, 17, 'user_time did not match')
+            self.assertEqual(p.system_time, 11, 'system_time did not match')
+            self.assertEqual(p.start_time, 1027736, 'start_time did not match')
 
 
     def test_loadavg(self):

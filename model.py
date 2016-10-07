@@ -356,9 +356,15 @@ class ProcessList(object):
             self.processes[pid] = proc
             return proc
 
+    def __getitem__(self, pid):
+        return self.get(pid)
+
     def __len__(self):
         return len(self.processes)
 
     def __iter__(self):
         for process in self.processes.values():
             yield process
+
+    def keys(self):
+        return self.processes.keys()

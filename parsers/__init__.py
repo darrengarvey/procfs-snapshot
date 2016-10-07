@@ -1,6 +1,8 @@
 
 import parser
 import loadavg
+import meminfo
+
 import util
 
 all_parsers = util.find_all_subclasses(parser.Parser)

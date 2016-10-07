@@ -1,6 +1,5 @@
 import re
 from smaps import parse_smaps_memory_region, is_memory_region_header
-from meminfo import parse_meminfo
 from uptime import parse_uptime
 from stat import parse_stat
 from vmstat import parse_vmstat
@@ -24,7 +23,7 @@ def _save_smaps_region(output, output2, pid, data):
         pass
 
 
-def _parse_section(section_name, current_process, current_thread, maps, data, out):
+def _parse_section(section_name, current_process, current_thread, data, out):
 
     try:
         parser = parsers.get_parser(section_name)
@@ -32,9 +31,7 @@ def _parse_section(section_name, current_process, current_thread, maps, data, ou
     except:
         pass
 
-    if section_name == 'meminfo':
-        parse_meminfo(maps, data)
-    elif section_name == 'uptime':
+    if section_name == 'uptime':
         parse_uptime(out['stats'], data)
     elif section_name == 'vmstat':
         parse_vmstat(out['stats'], data)
@@ -43,7 +40,7 @@ def _parse_section(section_name, current_process, current_thread, maps, data, ou
     elif current_process and section_name != '':
         # Hit a new file, consolidate what we have so far.
         if 'smaps' == section_name:
-            _save_smaps_region(current_process.maps, maps, current_process.pid, data)
+            _save_smaps_region(current_process.maps, out['meminfo'], current_process.pid, data)
         elif 'cmdline' == section_name:
             # Some command lines have a number of empty arguments. Ignore
             # that because it's not interesting here.
@@ -58,11 +55,11 @@ def read_tailed_files(stream):
     section_name = ''
     data = ''
     processes = ProcessList()
-    maps = MemoryStats()
     current_process = None
     current_thread = None
     out = {}
     out['stats'] = SystemStats()
+    out['meminfo'] = MemoryStats()
 
     for line in stream:
         LOGGER.debug('Got line: %s' % line)
@@ -74,7 +71,7 @@ def read_tailed_files(stream):
         #
         # between files
         elif line.startswith('==>'):
-            _parse_section(section_name, current_process, current_thread, maps, data, out)
+            _parse_section(section_name, current_process, current_thread, data, out)
             data = ''
             section_name = ''
             current_process = None
@@ -118,7 +115,7 @@ def read_tailed_files(stream):
 
         elif current_process and section_name == 'smaps' and is_memory_region_header(line):
             # We get here on reaching a new memory region in a smaps file.
-            _save_smaps_region(current_process.maps, maps, current_process.pid, data)
+            _save_smaps_region(current_process.maps, out['meminfo'], current_process.pid, data)
             data = line
         elif section_name != '':
             data += "\n" + line
@@ -126,6 +123,6 @@ def read_tailed_files(stream):
             LOGGER.debug('Skipping line: %s' % line)
 
     # We've hit the end, parse the section we were in.
-    _parse_section(section_name, current_process, current_thread, maps, data, out)
+    _parse_section(section_name, current_process, current_thread, data, out)
 
-    return out['stats'], processes, maps
+    return out['stats'], processes, out['meminfo']

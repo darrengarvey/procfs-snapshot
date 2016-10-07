@@ -25,12 +25,12 @@ def _save_stat(obj, res):
     if not (isinstance(obj, Process) or isinstance(obj, Thread)):
         raise TypeError('%s is not of type Process or Thread' % type(obj))
 
-    obj.comm = res['comm']
-    obj.minor_faults = res['minflt']
-    obj.major_faults = res['majflt']
-    obj.user_time = res['utime']
-    obj.system_time = res['stime']
-    obj.start_time = res['starttime']
+    obj.comm = res.get('comm')
+    obj.minor_faults = res.get('minflt')
+    obj.major_faults = res.get('majflt')
+    obj.user_time = res.get('utime')
+    obj.system_time = res.get('stime')
+    obj.start_time = res.get('starttime')
 
 def _parse_section(section_name, current_process, current_thread, data, out):
 

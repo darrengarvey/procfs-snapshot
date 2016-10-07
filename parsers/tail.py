@@ -1,8 +1,7 @@
 import re
 from smaps import parse_smaps_memory_region, is_memory_region_header
 
-from stat import parse_stat
-from model import SystemStats, Process, ProcessList, MemoryStats
+from model import SystemStats, Process, Thread, ProcessList, MemoryStats
 from util import LOGGER
 
 import parsers
@@ -22,6 +21,17 @@ def _save_smaps_region(output, output2, pid, data):
         pass
 
 
+def _save_stat(obj, res):
+    if not (isinstance(obj, Process) or isinstance(obj, Thread)):
+        raise TypeError('%s is not of type Process or Thread' % type(obj))
+
+    obj.comm = res['comm']
+    obj.minor_faults = res['minflt']
+    obj.major_faults = res['majflt']
+    obj.user_time = res['utime']
+    obj.system_time = res['stime']
+    obj.start_time = res['starttime']
+
 def _parse_section(section_name, current_process, current_thread, data, out):
 
     try:
@@ -31,7 +41,7 @@ def _parse_section(section_name, current_process, current_thread, data, out):
         pass
 
     if current_thread and section_name == 'stat':
-        parse_stat(current_thread, data)
+        _save_stat(current_thread, out['proc_stat'])
     elif current_process and section_name != '':
         # Hit a new file, consolidate what we have so far.
         if 'smaps' == section_name:
@@ -41,7 +51,7 @@ def _parse_section(section_name, current_process, current_thread, data, out):
             # that because it's not interesting here.
             current_process.argv = filter(len, data.strip().split('\0'))
         elif 'stat' == section_name:
-            parse_stat(current_process, data)
+            _save_stat(current_process, out['proc_stat'])
         else:
             LOGGER.error('Unrecognised section name: %s' % section_name)
 

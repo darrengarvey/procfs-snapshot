@@ -35,7 +35,7 @@ class MemoryRegion(object):
         self.private_dirty = 0
         self.referenced = 0
         self.anonymous = 0
-        self.anonymous_huge = 0
+        self.anon_huge_pages = 0
         self.shared_hugetlb = 0
         self.private_hugetlb = 0
         self.swap = 0
@@ -356,9 +356,15 @@ class ProcessList(object):
             self.processes[pid] = proc
             return proc
 
+    def __getitem__(self, pid):
+        return self.get(pid)
+
     def __len__(self):
         return len(self.processes)
 
     def __iter__(self):
         for process in self.processes.values():
             yield process
+
+    def keys(self):
+        return self.processes.keys()

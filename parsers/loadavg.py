@@ -1,15 +1,17 @@
-from util import LOGGER
+from parsers import parser
 from model import SystemStats
 
-def parse_loadavg(stats, data):
-    if not isinstance(stats, SystemStats):
-        raise TypeError('%s is not of type SystemStats' % type(stats))
+class Parser_loadavg(parser.Parser):
+    def parse(self, data, out):
+        parts = data.split()
+        # Parse data from /proc/loadavg.
+        # eg. 0.36 0.34 0.23 2/726 24671
+        if not out.has_key('stats'):
+            out['stats'] = SystemStats()
+        out['stats'].one_minute_load = float(parts[0])
+        out['stats'].five_minute_load = float(parts[1])
+        out['stats'].fifteen_minute_load = float(parts[2])
+        out['stats'].running_threads, out['stats'].total_threads = map(int, parts[3].split('/'))
+        out['stats'].last_pid = int(parts[4])
+        return out
 
-    parts = data.split()
-    # Parse data from /proc/loadavg.
-    # eg. 0.36 0.34 0.23 2/726 24671
-    stats.one_minute_load = float(parts[0])
-    stats.five_minute_load = float(parts[1])
-    stats.fifteen_minute_load = float(parts[2])
-    stats.running_threads, stats.total_threads = map(int, parts[3].split('/'))
-    stats.last_pid = int(parts[4])

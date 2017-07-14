@@ -1,7 +1,6 @@
-from model import SmapsPermissions, MemoryRegion
-from util import LOGGER
+from model import MemoryRegion
+import util
 import re
-
 
 def parse_smaps_header(header):
     info = MemoryRegion(free=False)
@@ -10,7 +9,7 @@ def parse_smaps_header(header):
     # 8ec00000-8ec01000 rw-s 00000000 00:14 20   /dev/shm/NS2371 (deleted)
     # All numbers are hex except for the inode
     parts = header.split()
-    LOGGER.debug('Parsing smaps header %s' % header)
+    util.LOGGER.debug('Parsing smaps header %s' % header)
 
     # Parse the address range
     info.start_addr, info.end_addr = [long(x, 16) for x in parts[0].split('-')]
@@ -40,26 +39,6 @@ def parse_smaps_header(header):
 
     return info
 
-
-_smaps_string_mappings = {
-    'Rss': 'rss',
-    'Pss': 'pss',
-    'Shared_Clean' : 'shared_clean',
-    'Shared_Dirty' : 'shared_dirty',
-    'Private_Clean' : 'private_clean',
-    'Private_Dirty' : 'private_dirty',
-    'Referenced' : 'referenced',
-    'Anonymous' : 'anonymous',
-    'AnonHugePages' : 'anonymous_huge',
-    'Shared_Hugetlb' : 'shared_hugetlb',
-    'Private_Hugetlb' : 'private_hugetlb',
-    'Swap' : 'swap',
-    'SwapPss' : 'swap_pss',
-    'KernelPageSize' : 'kernel_page_size',
-    'MMUPageSize': 'mmu_page_size',
-    'Locked': 'locked',
-}
-
 _header_re = re.compile('^[0-9a-zA-Z]+-[0-9a-zA-Z]+ .*')
 
 def is_memory_region_header(line):
@@ -67,26 +46,25 @@ def is_memory_region_header(line):
 
 def parse_smaps_memory_region(pid, lines, has_header=True):
     """Parse a whole smaps region, which may look like:
-
-7f5c8550e000-7f5c85554000 r--p 00000000 08:06 1309629   /fonts/Arial_Bold.ttf
-Size:                280 kB
-Rss:                 152 kB
-Pss:                  86 kB
-Shared_Clean:        132 kB
-Shared_Dirty:         12 kB
-Private_Clean:        20 kB
-Private_Dirty:         1 kB
-Referenced:          152 kB
-Anonymous:             2 kB
-AnonHugePages:         3 kB
-Shared_Hugetlb:        4 kB
-Private_Hugetlb:       5 kB
-Swap:                  6 kB
-SwapPss:               7 kB
-KernelPageSize:        8 kB
-MMUPageSize:           9 kB
-Locked:               10 kB
-VmFlags: rd mr mw me sd"""
+    7f5c8550e000-7f5c85554000 r--p 00000000 08:06 1309629   /fonts/Arial_Bold.ttf
+    Size:                280 kB
+    Rss:                 152 kB
+    Pss:                  86 kB
+    Shared_Clean:        132 kB
+    Shared_Dirty:         12 kB
+    Private_Clean:        20 kB
+    Private_Dirty:         1 kB
+    Referenced:          152 kB
+    Anonymous:             2 kB
+    AnonHugePages:         3 kB
+    Shared_Hugetlb:        4 kB
+    Private_Hugetlb:       5 kB
+    Swap:                  6 kB
+    SwapPss:               7 kB
+    KernelPageSize:        8 kB
+    MMUPageSize:           9 kB
+    Locked:               10 kB
+    VmFlags: rd mr mw me sd"""
 
     has_header = is_memory_region_header(lines[0])
 
@@ -102,10 +80,10 @@ VmFlags: rd mr mw me sd"""
 
     global _smaps_string_mappings
     for line in lines:
-        LOGGER.debug('Parsing line: %s' % line)
+        util.LOGGER.debug('Parsing line: %s' % line)
         parts = re.split('[ :]+', line.strip())
         if len(parts) < 2:
-            LOGGER.debug('Skipping smaps line that is too short: %s' % line)
+            util.LOGGER.debug('Skipping smaps line that is too short: %s' % line)
         elif 'Size' == parts[0]:
             # We calculate the size from the address ranges instead.
             pass
@@ -114,7 +92,7 @@ VmFlags: rd mr mw me sd"""
         else:
             # All other lines should be an amount of some type of memory.
             try:
-                region.__dict__[_smaps_string_mappings[parts[0]]] = int(parts[1]) * 1024
+                region.__dict__[util.camel_case_to_underscore(parts[0])] = int(parts[1]) * 1024
             except KeyError:
-                LOGGER.warn("Line not recognised: '%s'" % line)
+                util.LOGGER.warn("Line not recognised: '%s'" % line)
     return region

@@ -167,7 +167,7 @@ create table memory_region
     private_dirty       integer,
     referenced          integer,
     anonymous           integer,
-    anonymous_huge      integer,
+    anon_huge_pages     integer,
     shared_hugetlb      integer,
     private_hugetlb     integer,
     swap                integer,

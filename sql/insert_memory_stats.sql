@@ -21,7 +21,7 @@ insert into memory_region values (
     :private_dirty,
     :referenced,
     :anonymous,
-    :anonymous_huge,
+    :anon_huge_pages,
     :shared_hugetlb,
     :private_hugetlb,
     :swap,

@@ -1,9 +1,6 @@
 
 import unittest
-from parsers.smaps import (
-    parse_smaps_header,
-    parse_smaps_memory_region
-)
+import parsers.smaps
 
 class SmapsHeaderParserTest(unittest.TestCase):
     
@@ -24,7 +21,7 @@ class SmapsHeaderParserTest(unittest.TestCase):
         self.anonymous_line = '7f5cabd5d000-7f5cabd61000 rw-p 00007000 00:00 0 '
 
     def test_heap_parsing(self):
-        info = parse_smaps_header(self.heap_line)
+        info = parsers.smaps.parse_smaps_header(self.heap_line)
 
         self.assertEqual(0x011e6000, info.start_addr)
         self.assertEqual(0x01239000, info.end_addr)
@@ -49,7 +46,7 @@ class SmapsHeaderParserTest(unittest.TestCase):
 
 
     def test_shared_mem_parsing(self):
-        info = parse_smaps_header(self.shared_mem_line)
+        info = parsers.smaps.parse_smaps_header(self.shared_mem_line)
 
         self.assertEqual(0x7f5cabdce000, info.start_addr)
         self.assertEqual(0x7f5cabe4e000, info.end_addr)
@@ -82,26 +79,26 @@ class SmapsMemoryRegionParserTest(unittest.TestCase):
         # Here's a full example of what we get in smaps for a memory region
         # The numbers are faked to make the test more useful.
         data = """7f5c8550e000-7f5c85554000 r--p 00000000 08:06 1309629   /fonts/Arial_Bold.ttf
-Size:                280 kB
-Rss:                 152 kB
-Pss:                  86 kB
-Shared_Clean:        132 kB
-Shared_Dirty:         12 kB
-Private_Clean:        20 kB
-Private_Dirty:         1 kB
-Referenced:          152 kB
-Anonymous:             2 kB
-AnonHugePages:         3 kB
-Shared_Hugetlb:        4 kB
-Private_Hugetlb:       5 kB
-Swap:                  6 kB
-SwapPss:               7 kB
-KernelPageSize:        8 kB
-MMUPageSize:           9 kB
-Locked:               10 kB
-VmFlags: rd mr mw me sd"""
+                Size:                280 kB
+                Rss:                 152 kB
+                Pss:                  86 kB
+                Shared_Clean:        132 kB
+                Shared_Dirty:         12 kB
+                Private_Clean:        20 kB
+                Private_Dirty:         1 kB
+                Referenced:          152 kB
+                Anonymous:             2 kB
+                AnonHugePages:         3 kB
+                Shared_Hugetlb:        4 kB
+                Private_Hugetlb:       5 kB
+                Swap:                  6 kB
+                SwapPss:               7 kB
+                KernelPageSize:        8 kB
+                MMUPageSize:           9 kB
+                Locked:               10 kB
+                VmFlags: rd mr mw me sd"""
 
-        info = parse_smaps_memory_region(self.pid, data.split('\n'))
+        info = parsers.smaps.parse_smaps_memory_region(self.pid, data.split('\n'))
 
         self.assertEqual(self.pid, info.pid)
 
@@ -121,7 +118,7 @@ VmFlags: rd mr mw me sd"""
         self.assertEqual(152 * 1024, info.referenced)
 
         self.assertEqual(  2 * 1024, info.anonymous)
-        self.assertEqual(  3 * 1024, info.anonymous_huge)
+        self.assertEqual(  3 * 1024, info.anon_huge_pages)
 
         self.assertEqual(  4 * 1024, info.shared_hugetlb)
         self.assertEqual(  5 * 1024, info.private_hugetlb)
@@ -139,7 +136,7 @@ VmFlags: rd mr mw me sd"""
 
     def test_smaps_header_missing_filename(self):
         data='7f180c38f000-7f180c393000 rw-p 00000000 00:00 0\n'
-        info = parse_smaps_memory_region(self.pid, data.split('\n'))
+        info = parsers.smaps.parse_smaps_memory_region(self.pid, data.split('\n'))
 
         self.assertEqual(0x7f180c393000 - 0x7f180c38f000, info.size)
 
